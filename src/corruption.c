@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <stdint.h>
 #define MAX_SIZE 1024
 
 //sample run : ./bin/corruption output 0.5 bin-erasure
@@ -11,7 +13,7 @@ typedef enum {
   Z_CHANNEL,
   BIN_ERASURE,
   BIN_SYMM
-} type; 
+} channel; 
 
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> <probability> <type>\n\n",name);
@@ -23,19 +25,23 @@ void usage(char* name) {
 }
 
 //returns a random double between 0 and 1
-double random() {
+double randf() {
     return (double)rand()/(double)(RAND_MAX);
 }
 
 //extracts key schedule from text file
 void extract_text(char*, char*);
 
+//given a hexadecimal digit 'hex' and a type of  communication channel
+//randomly determines what will happen to each of the four digits of 'hex'
+void handle_quartet(char, double, channel);
+
 int main(int argc, char** argv) {
     srand(time(NULL));
 
     char* name, *endPtr;
     double p;
-    type t;
+    channel t;
     char schedule[MAX_SIZE];
     int len;
 
@@ -70,7 +76,10 @@ int main(int argc, char** argv) {
 
     //modification du key schedule
     for (int i = 0; i < len; i++) {
-        if (schedule[i] == ' ' || schedule[i] == '\n') continue;
+        if (schedule[i] == ' ' || schedule[i] == '\n') {
+            printf("%c",schedule[i]);
+            continue;
+        }
         handle_quartet(schedule[i], p, t);
     }
 
@@ -86,4 +95,33 @@ void extract_text(char* file, char* output) {
     fseek (f, 0, SEEK_SET);
     fread (output, 1, length, f);
     fclose(f);
+}
+
+//given a hexadecimal digit 'hex' and a type of  communication channel
+//randomly determines what will happen to each of the four digits of 'hex'
+void handle_quartet(char hex, double pr, channel t) {
+    char hexa[] = {hex, '\0'};
+    uint8_t modif = (uint8_t)strtol(hexa, NULL, 16); //<- modif doit etre un uint8_t
+    switch(t) { 
+        case BIN_ERASURE:
+        //binary erasure case
+        for (int i = 0; i < 4 ; i ++) {
+            if (randf() <= pr) {
+                printf("X");
+            } else if (hex & (1 << i)) {
+                printf("1");
+            } else {
+                printf("0");
+            }
+        }
+        case BIN_SYMM:
+        //binary symmetric case
+        for (int i = 0; i < 4 ; i ++) {
+            if (randf() <= pr) {
+                //inversion du i-eme bit de modif
+            } 
+        }
+        printf("%x",modif);
+    }
+    
 }

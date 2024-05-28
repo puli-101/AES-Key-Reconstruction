@@ -13,12 +13,12 @@ static int VERBOSE = 1;
 
 //parse string representant des octets -> int
 void parse_input(char* skey) {
-    char byte[9];
-    byte[8] = '\0';
+    char word[9];
+    word[8] = '\0';
     for (int i = 0; i < key_size; i+=8) {
         for (int j = 0; j < 8; j++)
-            byte[j] = skey[i + j];
-        key[i/8] = (int)strtol(byte, NULL, 16);
+            word[j] = skey[i + j];
+        key[i/8] = (int)strtol(word, NULL, 16);
     }
 
     for (int i = 0; VERBOSE && i < key_size/32; i++)
