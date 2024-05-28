@@ -40,11 +40,11 @@ void calc_key_schedule() {
             if (i == 0) {
                 exp_key[i][j] = key[j];
             } else if (j == 0) {
-                exp_key[i][j] = exp_key[i-1][j] ^ sub(rot(exp_key[i-1][N-1])) ^ rcon[0];
+                exp_key[i][j] = exp_key[i-1][j] ^ sub(rot(exp_key[i-1][N-1])) ^ (((uint32_t)rcon[i]) << 24);
             } else if (N > 6 && i%N == 4) {
                 exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i-1][N-1]);
             } else {
-                exp_key[i][j] = exp_key[i-1][j] ^ exp_key[i-1][N-1];
+                exp_key[i][j] = exp_key[i-1][j] ^ exp_key[i][j-1];
             }
         } 
     }
@@ -85,8 +85,6 @@ int main(int argc, char** argv) {
         if (VERBOSE)
             printf("\n");
     }
-
-    printf("%x : %x\n",key[0],sub(key[0]));
 
     calc_key_schedule();
 
