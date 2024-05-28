@@ -39,9 +39,14 @@ uint8_t rcon[255] = {
 
 
 uint32_t sub(uint32_t n) {
+    //decoupage en octets
     uint8_t subst[4] = {n, n >> 8, n >> 16, n >> 24};
-    printf("%x : %x %x %x %x\n",n,subst[0],subst[1],subst[2],subst[3]);
-    return n;
+    //substitution octet par octer
+    for (int i = 0; i < 4; i++)
+      subst[i] = sbox[subst[i]];
+    //reassamblage
+    return ((uint32_t)subst[0]) | (((uint32_t)subst[1]) << 8) 
+      | (((uint32_t)subst[2]) << 16) | (((uint32_t)subst[3]) << 24);
 }
 
 uint32_t rot(uint32_t n) {

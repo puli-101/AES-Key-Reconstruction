@@ -85,6 +85,9 @@ int main(int argc, char** argv) {
         if (VERBOSE)
             printf("\n");
     }
+
+    printf("%x : %x\n",key[0],sub(key[0]));
+
     calc_key_schedule();
 
     if (VERBOSE)
