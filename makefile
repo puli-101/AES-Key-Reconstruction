@@ -1,10 +1,13 @@
-all: main aes.o
+FLAGS = -Iinclude
+all: main obj/aes.o
 
-%.o: %.c %.h
-	gcc -c $<
+obj/%.o: src/%.c include/%.h
+	mkdir -p obj
+	gcc -c $< -o $@ $(FLAGS)
 
-%: %.c aes.o
-	gcc -o $@ $^
+%: src/%.c obj/aes.o
+	mkdir -p bin
+	gcc -o bin/$@ $^ $(FLAGS)
 
 clean:
-	rm *.o main
+	rm obj/* bin/*
