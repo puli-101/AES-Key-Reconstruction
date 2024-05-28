@@ -4,12 +4,12 @@
 #include <string.h>
 #include <stdint.h>
 #include "aes.h"
-#define VERBOSE 1
 
 static uint32_t key[8];
 static uint32_t exp_key[15][8];
 static int key_size = 128; 
 static int rounds = 10;
+static int VERBOSE = 1;
 
 //parse string representant des octets -> int
 void parse_input(char* skey) {
@@ -28,8 +28,9 @@ void parse_input(char* skey) {
 }
 
 void usage(char* name) {
-    fprintf(stderr,"Usage : %s [KEY]\n", name);
+    fprintf(stderr,"Usage : %s [KEY] [-v=false | -v=true]\n", name);
     fprintf(stderr,"Where KEY is a 32, 48 or 64 character long string representing a 128, 192 or 256 bit AES key respectively coded in hexadecimal\n");
+    fprintf(stderr,"And -v=false indicates verbose disabled\n");
     exit(-1);
 }
 
@@ -62,15 +63,33 @@ void print_key_schedule() {
 
 int main(int argc, char** argv) {
     int len;
-    if (argc == 2) {
-        //m-a-j de la taille de la clef
-        len = strlen(argv[1]);
-        key_size = len * 4;
-        rounds = 10 + (key_size - 128) / 32;
+    int random = 1;
+    char* skey;
 
-        if (len != 64 && len != 48 && len != 32) 
+    //traitement des options
+    for (int i = 1; i < argc; i++) {
+        len = strlen(argv[i]);
+        //check if verbose disabled
+        if (!strcmp(argv[i],"-v=false")) {
+            VERBOSE = 0;
+        }
+        //m-a-j de la taille de la clef
+        else if (len == 64 || len == 48 || len == 32) {
+            random = 0;
+            key_size = len * 4;
+            rounds = 10 + (key_size - 128) / 32;
+            skey = argv[i];
+        } 
+        //else -> erreur format
+        else {
             usage(argv[0]);
-        parse_input(argv[1]);
+        }
+    }
+
+
+    if (!random) {
+        //if a key was given as an input then we extract it
+        parse_input(skey);
     } else {
         //si on donne pas une clef en entree alors 
         //on genere une clef aleatoire de 128 bits
