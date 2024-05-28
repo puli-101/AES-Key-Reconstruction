@@ -22,7 +22,7 @@ void parse_input(char* skey) {
     }
 
     for (int i = 0; VERBOSE && i < key_size/32; i++)
-        printf("%x ",key[i]);
+        printf("%08x ",key[i]);
     if (VERBOSE)
         printf("\n");
 }
@@ -54,7 +54,7 @@ void print_key_schedule() {
     //rounds = 10, 12 ou 14
     for (int i = 0; i < rounds + 1; i ++ ) {
         for (int j = 0; j < key_size/32; j++) {
-            printf("%x ",exp_key[i][j]);
+            printf("%08x ",exp_key[i][j]);
         } 
         printf("\n");
     }
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 4; i++) {
             key[i] = rand();
             if (VERBOSE)
-                printf("%x ",key[i]);
+                printf("%08x ",key[i]);
         }
         if (VERBOSE)
             printf("\n");
