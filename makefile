@@ -1,5 +1,5 @@
 FLAGS = -Iinclude
-all: main obj/aes.o
+all: keygen obj/aes.o corruption
 
 obj/%.o: src/%.c include/%.h
 	mkdir -p obj
