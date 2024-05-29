@@ -4,12 +4,12 @@
 #include <string.h>
 #include <stdint.h>
 #include "aes.h"
+#include "util.h"
 
 static uint32_t key[8];
 static uint32_t exp_key[15][8];
 static int key_size = 128; 
 static int rounds = 10;
-static int VERBOSE = 1;
 
 //Given 'skey' a string representing a k-bit long number in hexadecimal
 //it casts every 8 consecutive characters into a 32-bit word

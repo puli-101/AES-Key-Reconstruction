@@ -8,7 +8,6 @@
 
 char grid[15][8][33]; 
 int key_length;
-static int VERBOSE = 1;
 
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> [options]\n", name);
@@ -19,6 +18,8 @@ void usage(char* name) {
 }
 
 void parse_input(char*, int);
+
+void correct();
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
 
     //Backtrack
     correct();
-    
+
     return EXIT_SUCCESS;
 }
 
@@ -81,4 +82,8 @@ void parse_input(char* raw, int size) {
             z++;
         }
     }
+}
+
+void correct() {
+
 }

@@ -1,5 +1,5 @@
 FLAGS = -Iinclude
-BINS = keygen corruption correct_bec
+BINS = keygen keymod correct_bec
 all: $(BINS)
 
 obj/%.o: src/%.c include/%.h

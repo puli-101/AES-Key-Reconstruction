@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int VERBOSE;
+
 typedef enum {
   Z_CHANNEL,
   BIN_ERASURE,

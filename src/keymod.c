@@ -6,9 +6,7 @@
 #include "util.h"
 #define MAX_SIZE 2048
 
-//sample execution : ./bin/corruption samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
-
-static int VERBOSE = 1;
+//sample execution : ./bin/keymod samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> <probability> <type>\n\n",name);

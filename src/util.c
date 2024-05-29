@@ -1,5 +1,7 @@
 #include "util.h"
 
+int VERBOSE = 1;
+
 //extracts all bytes of a text and stores it in a buffer
 //returns the size of the textfile
 int extract_text(char* file, char* buffer) {
