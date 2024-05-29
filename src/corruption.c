@@ -34,7 +34,8 @@ void extract_text(char*, char*);
 
 //given a hexadecimal digit 'hex' and a type of  communication channel
 //randomly determines what will happen to each of the four digits of 'hex'
-void handle_quartet(char, double, channel);
+//returns number of bits flipped / lost
+int handle_quartet(char, double, channel);
 
 int main(int argc, char** argv) {
     srand(time(NULL));
@@ -45,8 +46,16 @@ int main(int argc, char** argv) {
     char schedule[MAX_SIZE];
     int len;
 
-    if (argc != 4) {
+    if (argc < 4) {
         usage(argv[0]);
+    }
+
+    //traitement des options
+    for (int i = 4; i < argc; i++) {
+        //check if verbose disabled
+        if (!strcmp(argv[i],"-v=false")) {
+            VERBOSE = 0;
+        }
     }
     
     //traitement des options
@@ -73,16 +82,22 @@ int main(int argc, char** argv) {
     len = strlen(schedule);
     if (VERBOSE)
         printf("Extracted key schedule : \n%s\n",schedule);
-
+    
     //modification du key schedule
+    int losses = 0;
+    int actual_size = 0;
     for (int i = 0; i < len; i++) {
         if (schedule[i] == ' ' || schedule[i] == '\n') {
             printf("%c",schedule[i]);
             continue;
         }
-        handle_quartet(schedule[i], p, t);
+        losses += handle_quartet(schedule[i], p, t);
+        actual_size += 4;
     }
 
+    if (VERBOSE)
+        printf("Loss percentage : %.3f %%\n", (float)(100 * losses) / (float)actual_size);
+    
     return EXIT_SUCCESS;
 }
 
@@ -99,29 +114,53 @@ void extract_text(char* file, char* output) {
 
 //given a hexadecimal digit 'hex' and a type of  communication channel
 //randomly determines what will happen to each of the four digits of 'hex'
-void handle_quartet(char hex, double pr, channel t) {
+//returns number of bits flipped / lost
+int handle_quartet(char hex, double pr, channel t) {
     char hexa[] = {hex, '\0'};
-    uint8_t modif = (uint8_t)strtol(hexa, NULL, 16); //<- modif doit etre un uint8_t
+    uint8_t modif = (uint8_t)strtol(hexa, NULL, 16); //bitwise operations are done as ints not chars
+    uint8_t mask;
+    int loss_counter = 0;
+
+
     switch(t) { 
         case BIN_ERASURE:
         //binary erasure case
         for (int i = 0; i < 4 ; i ++) {
             if (randf() <= pr) {
                 printf("X");
-            } else if (hex & (1 << i)) {
+                loss_counter++;
+            } else if (hex & (1 << (3-i))) {
                 printf("1");
             } else {
                 printf("0");
             }
         }
+        printf(" ");
+        break;
+
         case BIN_SYMM:
         //binary symmetric case
         for (int i = 0; i < 4 ; i ++) {
             if (randf() <= pr) {
-                //inversion du i-eme bit de modif
+                //inversion d'un bit avec xor
+                modif ^= 1 << i;
+                loss_counter++;
+            } 
+        }
+        printf("%x",modif);
+        break;
+
+        case Z_CHANNEL:
+        //Z channel case
+        for (int i = 0; i < 4 ; i ++) {
+            //on teste si le bit est a 1
+            if ((modif & (1 << i)) && randf() <= pr) {
+                //inversion d'un bit avec xor
+                modif ^= 1 << i;
+                loss_counter++;
             } 
         }
         printf("%x",modif);
     }
-    
+    return loss_counter;
 }
