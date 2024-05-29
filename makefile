@@ -1,11 +1,12 @@
 FLAGS = -Iinclude
-all: keygen obj/aes.o corruption
+BINS = keygen corruption correct_bec
+all: $(BINS)
 
 obj/%.o: src/%.c include/%.h
 	mkdir -p obj
 	gcc -c $< -o $@ $(FLAGS)
 
-%: src/%.c obj/aes.o
+%: src/%.c obj/aes.o obj/util.o
 	mkdir -p bin
 	gcc -o bin/$@ $^ $(FLAGS)
 

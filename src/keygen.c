@@ -11,7 +11,9 @@ static int key_size = 128;
 static int rounds = 10;
 static int VERBOSE = 1;
 
-//parse string representant des octets -> int
+//Given 'skey' a string representing a k-bit long number in hexadecimal
+//it casts every 8 consecutive characters into a 32-bit word
+//and stores it in 'key'
 void parse_input(char* skey) {
     char word[9];
     word[8] = '\0';
@@ -34,7 +36,7 @@ void usage(char* name) {
     exit(-1);
 }
 
-//suit l'algorithme classique du calcul des key schedules
+//Classic AES key schedule algorithm 
 void calc_key_schedule() {
     int N = key_size/32;
     for (int i = 0; i < rounds + 1; i ++ ) {

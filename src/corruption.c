@@ -3,17 +3,12 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
+#include "util.h"
 #define MAX_SIZE 2048
 
 //sample execution : ./bin/corruption samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 
 static int VERBOSE = 1;
-
-typedef enum {
-  Z_CHANNEL,
-  BIN_ERASURE,
-  BIN_SYMM
-} channel; 
 
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> <probability> <type>\n\n",name);
@@ -24,17 +19,9 @@ void usage(char* name) {
     exit(EXIT_FAILURE);
 }
 
-//returns a random double between 0 and 1
-double randf() {
-    return (double)rand()/(double)(RAND_MAX);
-}
-
-//extracts key schedule from text file
-void extract_text(char*, char*);
-
 //given a hexadecimal digit 'hex' and a type of  communication channel
 //randomly determines what will happen to each of the four digits of 'hex'
-//returns number of bits flipped / lost
+//finally, it returns number of bits flipped / lost
 int handle_quartet(char, double, channel);
 
 int main(int argc, char** argv) {
@@ -101,20 +88,9 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-//extracts key schedule from text file
-void extract_text(char* file, char* output) {
-    int length;
-    FILE* f = fopen(file, "r");
-    fseek (f, 0, SEEK_END);
-    length = ftell (f);
-    fseek (f, 0, SEEK_SET);
-    fread (output, 1, length, f);
-    fclose(f);
-}
-
 //given a hexadecimal digit 'hex' and a type of  communication channel
 //randomly determines what will happen to each of the four digits of 'hex'
-//returns number of bits flipped / lost
+//finally, it returns number of bits flipped / lost
 int handle_quartet(char hex, double pr, channel t) {
     char hexa[] = {hex, '\0'};
     uint8_t modif = (uint8_t)strtol(hexa, NULL, 16); //bitwise operations are done as ints not chars
