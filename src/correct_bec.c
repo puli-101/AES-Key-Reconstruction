@@ -4,6 +4,8 @@
 
 //sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
 
+char *aes_grid; 
+
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> [options]\n", name);
     fprintf("Where <filename> contains a corrupted AES key schedule that went through the binary erasure channel\n");
@@ -16,6 +18,7 @@ int main(int argc, char** argv) {
         usage(argv[0]);
     }
 
-
+    char *file = argv[1];
+    
     return EXIT_SUCCESS;
 }

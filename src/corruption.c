@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
-#define MAX_SIZE 1024
+#define MAX_SIZE 2048
 
 //sample execution : ./bin/corruption samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 
@@ -118,9 +118,7 @@ void extract_text(char* file, char* output) {
 int handle_quartet(char hex, double pr, channel t) {
     char hexa[] = {hex, '\0'};
     uint8_t modif = (uint8_t)strtol(hexa, NULL, 16); //bitwise operations are done as ints not chars
-    uint8_t mask;
     int loss_counter = 0;
-
 
     switch(t) { 
         case BIN_ERASURE:
@@ -129,7 +127,7 @@ int handle_quartet(char hex, double pr, channel t) {
             if (randf() <= pr) {
                 printf("X");
                 loss_counter++;
-            } else if (hex & (1 << (3-i))) {
+            } else if (modif & (1 << (3-i))) {
                 printf("1");
             } else {
                 printf("0");
