@@ -5,7 +5,7 @@
 #include <stdint.h>
 #define MAX_SIZE 1024
 
-//sample run : ./bin/corruption output 0.5 bin-erasure
+//sample execution : ./bin/corruption samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 
 static int VERBOSE = 1;
 
