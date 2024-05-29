@@ -24,6 +24,8 @@ int parse_input(char*, int);
 
 void correct_128();
 
+void print_grid();
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         usage(argv[0]);
@@ -52,12 +54,7 @@ int main(int argc, char** argv) {
     //Graphic parse confirmation
     if (VERBOSE) {
         printf("Parsed input : \n");
-        int space = 0;
-        for (int i = 0; i < rows; i++) {
-            for(int j = 0; j < columns; j++)
-                printf("%s ",grid[i][j]);
-            printf("\n");
-        }
+        print_grid();
         printf("\nType : AES-%d\nNumber of unknown bits : %d\n",key_length,nb_unknown);
     }
 
@@ -68,9 +65,9 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-//We transform the text file representing the output of a binary erasure channel 
-//into a 3-dimensional 'grid' array where the first coordinate represents the turn, 
-//the second the number of the word in a given turn and the third the value of the 32-bit word
+//We transform the text file representing the output of a binary erasure channel (given an aes key schedule as an input)
+//into a 3-dimensional 'grid' array where the first coordinate represents the round, 
+//the second the position of a word in a given round and the third the value of the 32-bit word
 int parse_input(char* raw, int size) {
     int x,y,z;
     int idx = 0;
@@ -103,7 +100,41 @@ int parse_input(char* raw, int size) {
 }
 
 void correct_128() {
+    int x, y, z;
+    char top,left;
+    int solved = 0;
+    if (VERBOSE)
+        printf("Preliminary resolution...\n");
+    //preliminary resolution of internal bits
+    //(bits that aren't in words in the first column or first row)
     for (int i = 0; i < nb_unknown; i++) {
-        
+        x = unresolved[i][0];
+        y = unresolved[i][1];
+        z = unresolved[i][2];   
+        if (x == 0 || y == 0) continue;
+        top = grid[x-1][y][z];
+        left = grid[x][y-1][z];
+        if (top == 'X' || left == 'X') continue;
+
+        //xor a la main
+        if ((left == '1' && top == '1') || (left == '0' && top == '0'))
+            grid[x][y][z] = '0';
+        else
+            grid[x][y][z] = '1';
+
+        solved++;
+    }
+    if (VERBOSE) {
+        printf("Resolved %f %% unknown bits\n", (float)(100 * solved) / (nb_unknown));
+        print_grid();
+        printf("\n");
+    }
+}
+
+void print_grid() {
+    for (int i = 0; i < rows; i++) {
+        for(int j = 0; j < columns; j++)
+            printf("%s ",grid[i][j]);
+        printf("\n");
     }
 }
