@@ -6,7 +6,7 @@
 
 //sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
 
-char grid[15][8][8][4]; 
+char grid[15][8][33]; 
 int key_length;
 static int VERBOSE = 1;
 
@@ -38,47 +38,47 @@ int main(int argc, char** argv) {
     }
 
     if (VERBOSE) {
-        printf("Extracted schedule :\n%sTotal length : %d\nType : AES-%d\n",raw,size,key_length);
+        printf("Extracted schedule :\n%sTotal length : %d\nType : AES-%d\n\n",raw,size,key_length);
     }
 
     parse_input(raw, size);
 
+    //Graphic parse confirmation
     if (VERBOSE) {
         printf("Parsed input : \n");
         for (int i = 0; i < 15; i++) {
             for(int j = 0; j < 8; j++) {
-                for (int s = 0; s < 8; s++) {
-                    for (int t = 0; t < 4; t++) {
-                        if (grid[i][j][s][t] == 0) continue;
-                        printf("%c",grid[i][j][s][t]);
-                    }
-                    printf(" ");
-                }
-                printf(" ");
+                if (grid[i][j] == 0) continue;
+                printf("%s ",grid[i][j]);
             }
             printf("\n");
         }
     }
+
+    //Backtrack
+    correct();
+    
     return EXIT_SUCCESS;
 }
 
+//On transforme le fichier texte representant la sortie d'un cannal binaire a effacement 
+//en un tableau 'grid' a 3 dimension ou la premiere cordonnee represente le tour, 
+//la deuxieme le numero du mot du tour et la troisieme la valeur du mot
 void parse_input(char* raw, int size) {
-    int a,b,c,d;
-    a = b = c = d = 0;
+    int x,y,z;
+    x = y = z = 0;
     for(int i = 0; i < size - 1; i++) {
         if (raw[i] == '\n') {
-            a++;
-            b = c = d = 0;
+            x++;
+            y = z = 0;
         } else if (raw[i] == ' ' && raw[i+1] == ' ') {
-            b++;
+            grid[x][y][z] = '\0';
+            y++;
             i++;
-            c = d = 0;
-        } else if (raw[i] == ' ') {
-            c++;
-            d = 0;
-        }else {
-            grid[a][b][c][d] = raw[i];
-            d++;
+            z = 0;
+        } else if (raw[i] != ' ') {
+            grid[x][y][z] = raw[i];
+            z++;
         }
     }
 }
