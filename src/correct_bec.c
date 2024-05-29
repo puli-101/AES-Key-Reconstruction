@@ -26,6 +26,8 @@ void correct_128();
 
 void print_grid();
 
+char ascii_xor(char, char);
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         usage(argv[0]);
@@ -99,36 +101,77 @@ int parse_input(char* raw, int size) {
     return idx;
 }
 
-void correct_128() {
-    int x, y, z;
-    char top,left;
+int core() {
     int solved = 0;
-    if (VERBOSE)
-        printf("Preliminary resolution...\n");
-    //preliminary resolution of internal bits
+    int x, y, z;
+    char top,left, bottom, bleft, right, tright;
+    
+    //preliminary resolution of internal bits TOP-LEFT APPROACH
     //(bits that aren't in words in the first column or first row)
     for (int i = 0; i < nb_unknown; i++) {
         x = unresolved[i][0];
         y = unresolved[i][1];
         z = unresolved[i][2];   
-        if (x == 0 || y == 0) continue;
+        if (x == 0 || y == 0 || grid[x][y][z] != 'X') continue;
         top = grid[x-1][y][z];
         left = grid[x][y-1][z];
         if (top == 'X' || left == 'X') continue;
 
-        //xor a la main
-        if ((left == '1' && top == '1') || (left == '0' && top == '0'))
-            grid[x][y][z] = '0';
-        else
-            grid[x][y][z] = '1';
-
+        grid[x][y][z] = ascii_xor(left,top);
         solved++;
     }
+
+    //preliminary resolution of internal bits BOTTOM/BOTTOM-LEFT APPROACH
+    for (int i = 0; i < nb_unknown; i++) {
+        x = unresolved[i][0];
+        y = unresolved[i][1];
+        z = unresolved[i][2];   
+        if (x == (rows - 1) || y == 0 || grid[x][y][z] != 'X') continue;
+        bottom = grid[x+1][y][z];
+        bleft = grid[x+1][y-1][z];
+        if (bottom == 'X' || bleft == 'X') continue;
+
+        //xor a la main
+        grid[x][y][z] = ascii_xor(bottom, bleft);
+        solved++;
+    }
+
+    //preliminary resolution of internal bits RIGHT/TOP-RIGHT APPROACH
+    for (int i = 0; i < nb_unknown; i++) {
+        x = unresolved[i][0];
+        y = unresolved[i][1];
+        z = unresolved[i][2];   
+        if (x == 0 || y == (columns - 1) || grid[x][y][z] != 'X') continue;
+        right = grid[x][y+1][z];
+        tright = grid[x-1][y+1][z];
+        if (right == 'X' || tright == 'X') continue;
+
+        //xor a la main
+        grid[x][y][z] = ascii_xor(right, tright);
+        solved++;
+    }
+    return solved;
+}
+
+void correct_128() {
+    int solved = 0, delta;
+    if (VERBOSE)
+        printf("Preliminary resolution...\n");
+
+    do {
+        delta = core();
+        if (VERBOSE)
+            printf("Resolved %d more bits...\n",delta);
+        solved += delta;
+    } while(delta > 0);
+
     if (VERBOSE) {
-        printf("Resolved %f %% unknown bits\n", (float)(100 * solved) / (nb_unknown));
+        printf("Resolved %.3f %% unknown bits\n", ((float)100 * solved/(float)nb_unknown));
         print_grid();
         printf("\n");
     }
+
+
 }
 
 void print_grid() {
@@ -137,4 +180,8 @@ void print_grid() {
             printf("%s ",grid[i][j]);
         printf("\n");
     }
+}
+
+char ascii_xor(char a, char b) {
+    return ((a == '1' && b == '1') || (a == '0' && b == '0')) ? '0' : '1';
 }
