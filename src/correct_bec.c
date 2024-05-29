@@ -43,8 +43,22 @@ int main(int argc, char** argv) {
 
     parse_input(raw, size);
 
-    
-
+    if (VERBOSE) {
+        printf("Parsed input : \n");
+        for (int i = 0; i < 15; i++) {
+            for(int j = 0; j < 8; j++) {
+                for (int s = 0; s < 8; s++) {
+                    for (int t = 0; t < 4; t++) {
+                        if (grid[i][j][s][t] == 0) continue;
+                        printf("%c",grid[i][j][s][t]);
+                    }
+                    printf(" ");
+                }
+                printf(" ");
+            }
+            printf("\n");
+        }
+    }
     return EXIT_SUCCESS;
 }
 
