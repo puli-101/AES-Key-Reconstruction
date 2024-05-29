@@ -6,8 +6,11 @@
 
 //sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
 
-char grid[15][8][33]; 
-int key_length;
+char grid[15][8][33];       //representation ascii d'un key schedule
+int key_length;             //taille de la clef aes (128,192,256)
+int unresolved[4000][3];    //cordonnees des bits inconnus
+int nb_unknown;             //nombre de bits inconnus
+int rows, columns;
 
 void usage(char* name) {
     fprintf(stderr,"Usage : %s <filename> [options]\n", name);
@@ -17,9 +20,9 @@ void usage(char* name) {
     exit(EXIT_FAILURE);
 }
 
-void parse_input(char*, int);
+int parse_input(char*, int);
 
-void correct();
+void correct_128();
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -32,41 +35,46 @@ int main(int argc, char** argv) {
     //on determine la taille de la clef a partir de la taille du fichier
     if (size < 1820) {
         key_length = 128;
+        rows = 11;
+        columns = 4;
     } else if (size > 4900) {
         key_length = 256;
+        columns = 8;
+        rows = 15;
     } else {
         key_length = 192;
+        columns = 6;
+        rows = 13;
     }
 
-    if (VERBOSE) {
-        printf("Extracted schedule :\n%sTotal length : %d\nType : AES-%d\n\n",raw,size,key_length);
-    }
-
-    parse_input(raw, size);
+    nb_unknown = parse_input(raw, size);
 
     //Graphic parse confirmation
     if (VERBOSE) {
         printf("Parsed input : \n");
-        for (int i = 0; i < 15; i++) {
-            for(int j = 0; j < 8; j++) {
-                if (grid[i][j] == 0) continue;
+        int space = 0;
+        for (int i = 0; i < rows; i++) {
+            for(int j = 0; j < columns; j++)
                 printf("%s ",grid[i][j]);
-            }
             printf("\n");
         }
+        printf("\nType : AES-%d\nNumber of unknown bits : %d\n",key_length,nb_unknown);
     }
 
     //Backtrack
-    correct();
+    if (key_length == 128)
+        correct_128();
 
     return EXIT_SUCCESS;
 }
 
-//On transforme le fichier texte representant la sortie d'un cannal binaire a effacement 
-//en un tableau 'grid' a 3 dimension ou la premiere cordonnee represente le tour, 
-//la deuxieme le numero du mot du tour et la troisieme la valeur du mot
-void parse_input(char* raw, int size) {
+//We transform the text file representing the output of a binary erasure channel 
+//into a 3-dimensional 'grid' array where the first coordinate represents the turn, 
+//the second the number of the word in a given turn and the third the value of the 32-bit word
+int parse_input(char* raw, int size) {
     int x,y,z;
+    int idx = 0;
+
     x = y = z = 0;
     for(int i = 0; i < size - 1; i++) {
         if (raw[i] == '\n') {
@@ -81,9 +89,21 @@ void parse_input(char* raw, int size) {
             grid[x][y][z] = raw[i];
             z++;
         }
+
+        //ajout dans la liste des bits inconnus
+        if (raw[i] == 'X') {
+            unresolved[idx][0] = x;
+            unresolved[idx][1] = y;
+            unresolved[idx][2] = z - 1;
+            idx++;
+        }
     }
+
+    return idx;
 }
 
-void correct() {
-
+void correct_128() {
+    for (int i = 0; i < nb_unknown; i++) {
+        
+    }
 }
