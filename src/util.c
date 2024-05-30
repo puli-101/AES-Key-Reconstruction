@@ -15,6 +15,15 @@ int extract_text(char* file, char* buffer) {
     return length;
 }
 
+//xor of a and b where a and b are characters in {'0','1'}
+char ascii_xor(char a, char b) {
+    if ((a == '0' || a == '1') && (b == '0' || b == '1'))
+        return ((a == '1' && b == '1') || (a == '0' && b == '0')) ? '0' : '1';
+    else
+        fprintf(stderr,"Error while x-oring a : %c , b : %c \n",a,b);
+    exit(EXIT_FAILURE);
+}
+
 // Function to create a new node
 list* create_cell(int *data, int size) {
     list* newNode = (list*)malloc(sizeof(list));
@@ -113,4 +122,11 @@ void free_list(list** head) {
     }
     
     *head = NULL;
+}
+
+list* getFromIndex(list* lst, int index) {
+    int i = 0;
+    list* iter;
+    for(iter = lst; iter && index != i; iter = iter->next, i++);
+    return iter;
 }

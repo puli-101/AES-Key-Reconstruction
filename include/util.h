@@ -22,6 +22,10 @@ static inline double randf() {
 //returns the size of the textfile
 int extract_text(char*, char*);
 
+//xor of a and b where a and b are characters in {'0','1'}
+char ascii_xor(char a, char b);
+
+//DOUBLE LINKED LIST FUNCTIONS
 typedef struct t_list {
   struct t_list* next;
   struct t_list* prev;
@@ -35,5 +39,6 @@ void check(void*);
 void free_cell(list*);
 int is_empty(list*);
 void free_list(list**);
+list* getFromIndex(list*, int);
 
 #endif

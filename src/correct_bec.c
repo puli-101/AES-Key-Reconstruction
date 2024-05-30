@@ -28,6 +28,8 @@ void print_grid();
 
 char ascii_xor(char, char);
 
+int check_grid();
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         usage(argv[0]);
@@ -68,9 +70,9 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-//We transform the text file representing the output of a binary erasure channel (given an aes key schedule as an input)
-//into a 3-dimensional 'grid' array where the first coordinate represents the round, 
-//the second the position of a word in a given round and the third the value of the 32-bit word
+//Transformation of a text file representing the output of a binary erasure channel (given an aes key schedule as an input)
+//into a 3-dimensional 'grid' array where the first coordinate represents the round number, 
+//the second, the position of a word in a given round and the third the value of the 32-bit word (in binary ascii e.g. "1101")
 void parse_input(char* raw, int size) {
     int x,y,z;
 
@@ -98,12 +100,14 @@ void parse_input(char* raw, int size) {
     }
 }
 
-int core() {
+//Knowing the value of the previous word and the 
+//same word in the previous round we can determine 
+//the value of an unknown bit
+int core(int deletion) {
     int solved = 0;
     int x, y, z;
     char top,left, bottom, bleft, right, tright;
     list* next;
-    
     
     //preliminary resolution of internal bits TOP-LEFT APPROACH
     //(bits that aren't in words in the first column or first row)
@@ -119,8 +123,8 @@ int core() {
             if (top == 'X' || left == 'X') continue;
             grid[x][y][z] = ascii_xor(left,top);
             solved++;
-            delete_elt(&unresolved, iter);
-            printf("(%d,%d,%d)\n",x,y,z);
+            if (deletion)
+                delete_elt(&unresolved, iter);
         }
         iter = next;
     }  
@@ -138,7 +142,8 @@ int core() {
             //xor a la main
             grid[x][y][z] = ascii_xor(bottom, bleft);
             solved++;
-            delete_elt(&unresolved, iter);
+            if (deletion)
+                delete_elt(&unresolved, iter);
         }
         iter = next;
     }
@@ -155,20 +160,41 @@ int core() {
             //xor a la main
             grid[x][y][z] = ascii_xor(right, tright);
             solved++;
-            delete_elt(&unresolved, iter);
+            if (deletion)
+                delete_elt(&unresolved, iter);
         }
         iter = next;
     }
     return solved;
 }
 
+int propagate(list* head) {
+    if (head == NULL) 
+        return check_grid();
+    int x = head->data[0];
+    int y = head->data[1];
+    int z = head->data[2];
+    if (grid[x][y][z] != 'X') {
+        return propagate(head->next);
+    } else {
+        grid[x][y][z] = '1';
+        core(0);
+        if (propagate(head->next))
+            return 1;
+        grid[x][y][z] = '0';
+        core(0);
+        return propagate(head->next);
+    }
+}
+
 void correct_128() {
     int solved = 0, delta;
+
     if (VERBOSE)
         printf("Preliminary resolution...\n");
 
     do {
-        delta = core();
+        delta = core(1);
         if (VERBOSE)
             printf("Resolved %d more bits...\n",delta);
         solved += delta;
@@ -179,6 +205,11 @@ void correct_128() {
         print_grid();
         printf("\n");
     }
+
+    if (VERBOSE) {
+        printf("Beginning recursive dissemination...\n");
+    }
+    propagate(unresolved);    
 }
 
 void print_grid() {
@@ -189,10 +220,47 @@ void print_grid() {
     }
 }
 
-char ascii_xor(char a, char b) {
-    if ((a == '0' || a == '1') && (b == '0' || b == '1'))
-        return ((a == '1' && b == '1') || (a == '0' && b == '0')) ? '0' : '1';
-    else
-        fprintf(stderr,"Error while x-oring a : %c , b : %c \n",a,b);
-    exit(EXIT_FAILURE);
+//If possible translate the binary string grid into a numeric key schedule and returns 1
+//else: return 0
+int parse_grid(uint32_t schedule[15][8]) {
+    char *endPtr;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < columns; j++) {
+            schedule[i][j] = strtol(grid[i][j], &endPtr, 2); 
+            if (endPtr == grid[i][j])
+                return 0;
+        }
+    }
+    return 1;
+}
+
+//Determines if grid represents a valid key schedule
+int check_grid() {
+    uint32_t exp_key[15][8];
+
+    if (!parse_grid(exp_key))
+        return 0;
+
+    for (int i = 1; i < rows; i++) {
+        for (int j = 0; j < columns; j++) {
+            //all possible key schedule operations on a given word
+            if ((j == 0 && !(exp_key[i][j] == exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
+                ((columns > 6 && j%columns == 4) && !(exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
+                (!(exp_key[i][j] == exp_key[i-1][j] ^ exp_key[i][j-1]))){
+                return 0;
+            }
+        }
+    }
+
+    if (VERBOSE) {
+        printf("\nSolution :\n");
+    }
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < columns; j++) {
+            printf("%x ",exp_key[i][j]);
+        }
+        printf("\n");
+    }
+
+    return 1;
 }
