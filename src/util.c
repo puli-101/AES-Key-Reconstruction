@@ -30,6 +30,7 @@ list* create_cell(int *data, int size) {
     check(newNode);
     newNode->data = (int*)malloc(sizeof(int)*size);
     check(newNode->data);
+    newNode->size = size;
     for(int i = 0; i < size; i++)
         newNode->data[i] = data[i];
     newNode->next = NULL;
@@ -85,8 +86,10 @@ void print_list(list* head) {
     list* temp = head;
     
     while (temp != NULL) {
-        //for (int i = 0; i < head->size; i++)
-        //    printf("%d ", temp->data[i]);
+        printf("(");
+        for (int i = 0; i < temp->size-1; i++)
+            printf("%d, ", temp->data[i]);
+        printf("%d)",temp->data[temp->size-1]);
         printf("|");
         temp = temp->next;
     }

@@ -157,7 +157,6 @@ int core(int deletion) {
                 && !(grid[x][y+1][z] == 'X' || grid[x-1][y+1][z] == 'X')) {
             right = grid[x][y+1][z];
             tright = grid[x-1][y+1][z];
-            //xor a la main
             grid[x][y][z] = ascii_xor(right, tright);
             solved++;
             if (deletion)
@@ -165,9 +164,24 @@ int core(int deletion) {
         }
         iter = next;
     }
+
+    //first column resolution
+    for (list* iter = unresolved; iter;) {
+        x = iter->data[0];
+        y = iter->data[1];
+        z = iter->data[2]; 
+        next = iter->next;  
+        if (!(x == 0 || y != 0 || grid[x][y][z] != 'X')) {
+            //smthng to do with sub, rot and rcon  
+        }
+        iter = next;
+    }
+
     return solved;
 }
 
+//Recursive function that tries every possible value for
+//every unknown bit and then tries to spread the partial result to other unknown bits
 int propagate(list* head) {
     if (head == NULL) {
         printf("Checking validity\n");
@@ -267,7 +281,7 @@ int check_grid() {
             if ((j == 0 && !(exp_key[i][j] == exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
                 ((columns > 6 && j%columns == 4) && !(exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
                 (!(exp_key[i][j] == exp_key[i-1][j] ^ exp_key[i][j-1]))){
-                print_schedule(exp_key,rows,columns);
+                //print_schedule(exp_key,rows,columns);
                 return 0;
             }
         }

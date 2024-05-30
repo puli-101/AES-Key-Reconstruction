@@ -11,4 +11,4 @@ obj/%.o: src/%.c include/%.h
 	gcc -g -o bin/$@ $^ $(FLAGS)
 
 clean:
-	rm obj/* bin/*
+	rm -f obj/* bin/*
