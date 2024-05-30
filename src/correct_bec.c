@@ -169,22 +169,37 @@ int core(int deletion) {
 }
 
 int propagate(list* head) {
-    if (head == NULL) 
+    if (head == NULL) {
+        printf("Checking validity\n");
         return check_grid();
+    }
     int x = head->data[0];
     int y = head->data[1];
     int z = head->data[2];
+    int solved = 0;
     if (grid[x][y][z] != 'X') {
-        return propagate(head->next);
-    } else {
-        grid[x][y][z] = '1';
-        core(0);
+        printf("Skipping (%d,%d,%d)\n",x,y,z);
         if (propagate(head->next))
             return 1;
+        grid[x][y][z] = 'X';
+    } else {
+        printf("1- Trying with 1 : (%d,%d,%d)\n",x,y,z);
+        grid[x][y][z] = '1';
+        solved = core(0);
+        printf("- %d more bits resolved \n",solved);
+        if (propagate(head->next))
+            return 1;
+        printf("2- Trying with 0 : (%d,%d,%d)\n",x,y,z);
         grid[x][y][z] = '0';
-        core(0);
-        return propagate(head->next);
+        solved = core(0);
+        printf("- %d more bits resolved \n",solved);
+        if (propagate(head->next)) {
+            return 1;
+        } else {
+            grid[x][y][z] = 'X';
+        }
     }
+    return 0;
 }
 
 void correct_128() {
@@ -209,7 +224,10 @@ void correct_128() {
     if (VERBOSE) {
         printf("Beginning recursive dissemination...\n");
     }
-    propagate(unresolved);    
+    print_list(unresolved);
+    if (!propagate(unresolved)) {
+        printf("No solutions found !\n");
+    }    
 }
 
 void print_grid() {
@@ -234,6 +252,8 @@ int parse_grid(uint32_t schedule[15][8]) {
     return 1;
 }
 
+
+
 //Determines if grid represents a valid key schedule
 int check_grid() {
     uint32_t exp_key[15][8];
@@ -247,6 +267,7 @@ int check_grid() {
             if ((j == 0 && !(exp_key[i][j] == exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
                 ((columns > 6 && j%columns == 4) && !(exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
                 (!(exp_key[i][j] == exp_key[i-1][j] ^ exp_key[i][j-1]))){
+                print_schedule(exp_key,rows,columns);
                 return 0;
             }
         }
@@ -255,12 +276,8 @@ int check_grid() {
     if (VERBOSE) {
         printf("\nSolution :\n");
     }
-    for(int i = 0; i < rows; i++) {
-        for(int j = 0; j < columns; j++) {
-            printf("%x ",exp_key[i][j]);
-        }
-        printf("\n");
-    }
+    
+    print_schedule(exp_key,rows,columns);
 
     return 1;
 }

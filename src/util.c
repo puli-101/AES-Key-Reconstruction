@@ -83,15 +83,12 @@ void print_list(list* head) {
     if (head == NULL) return;
     
     list* temp = head;
-    while (temp->next != NULL) {
-        temp = temp->next;
-    }
     
     while (temp != NULL) {
-        for (int i = 0; i < head->size; i++)
-            printf("%d ", temp->data[i]);
+        //for (int i = 0; i < head->size; i++)
+        //    printf("%d ", temp->data[i]);
         printf("|");
-        temp = temp->prev;
+        temp = temp->next;
     }
     printf("\n");
 }

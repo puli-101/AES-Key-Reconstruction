@@ -54,16 +54,6 @@ void calc_key_schedule() {
     }
 }
 
-void print_key_schedule() {
-    //rounds = 10, 12 ou 14
-    for (int i = 0; i < rounds + 1; i ++ ) {
-        for (int j = 0; j < key_size/32; j++) {
-            printf("%08x ",exp_key[i][j]);
-        } 
-        printf("\n");
-    }
-}
-
 int main(int argc, char** argv) {
     int len;
     int random = 1;
@@ -112,7 +102,8 @@ int main(int argc, char** argv) {
 
     if (VERBOSE)
         printf("Derived key scheduled :\n");
-    print_key_schedule();
+    
+    print_schedule(exp_key, rounds+1, key_size/32);
 
     return EXIT_SUCCESS;
 }

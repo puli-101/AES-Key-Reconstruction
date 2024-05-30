@@ -40,5 +40,5 @@ void free_cell(list*);
 int is_empty(list*);
 void free_list(list**);
 list* getFromIndex(list*, int);
-
+void print_list(list*);
 #endif
