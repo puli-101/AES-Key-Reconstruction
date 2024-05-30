@@ -22,4 +22,18 @@ static inline double randf() {
 //returns the size of the textfile
 int extract_text(char*, char*);
 
+typedef struct t_list {
+  struct t_list* next;
+  struct t_list* prev;
+  int size;
+  int* data;
+} list;
+
+void insert(list**, int*, int);
+void delete_elt(list**, list*);
+void check(void*);
+void free_cell(list*);
+int is_empty(list*);
+void free_list(list**);
+
 #endif
