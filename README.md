@@ -43,13 +43,13 @@ Where filename contains an AES key schedule that went through the binary erasure
 
 To correct a key schedule whose bits have flipped as follow 
 
-![Wikipedia Diagram Showing Z-Channel](https://en.wikipedia.org/wiki/Z-channel_(information_theory)#/media/File:Z-channel.svg)
+![Wikimedia Diagram Showing Z-Channel](https://upload.wikimedia.org/wikipedia/commons/0/0e/Z-channel.svg)
 
 Execute
 
     ./bin/correct_z <file> <probability> [options]
 
-Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of hexadecimal values.
+Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of 32-bit-long hexadecimal values.
 
 ## Improvements
 
