@@ -5,13 +5,14 @@
 #include "util.h"
 #define MAX_SIZE 8192
 
-//sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
+//sample execution : ./bin/correct_z samples/aes-128-z_channel.txt -v=false
 
-char grid[15][8][33];       //representation ascii d'un key schedule
+uint32_t grid[15][8];       //representation d'un key schedule
 int key_length;             //taille de la clef aes (128,192,256)
 list* unresolved;           //liste de cordonnees des bits inconnus
 int nb_unknown;             //nombre de bits inconnus
 int rows, columns;
+
 void usage(char* name) {
     print_color(stderr,"Input Formatting Error","red",'\n');
     print_color(stderr, "Usage :","yellow",' ');
@@ -29,6 +30,7 @@ int main(int argc, char** argv) {
         usage(argv[0]);
     }
 
+    
     
 
     return EXIT_SUCCESS;

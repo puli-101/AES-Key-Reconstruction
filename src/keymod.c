@@ -67,9 +67,11 @@ int main(int argc, char** argv) {
     //extraction de key schedule
     extract_text(name, schedule);
     len = strlen(schedule);
-    if (VERBOSE)
-        printf("Extracted key schedule : \n%s\n",schedule);
-    
+    if (VERBOSE) {
+        print_color(stdout,"Extracted key schedule :","yellow",'\n');
+        printf("%s\n\n",schedule);
+        print_color(stdout,"Modified key schedule :","yellow",'\n');
+    }
     //modification du key schedule
     int losses = 0;
     int actual_size = 0;
@@ -82,8 +84,10 @@ int main(int argc, char** argv) {
         actual_size += 4;
     }
 
-    if (VERBOSE)
-        printf("Loss percentage : %.3f %%\n", (float)(100 * losses) / (float)actual_size);
+    if (VERBOSE) {
+        print_color(stdout, "\nLoss percentage :", "yellow", ' ');
+        printf("%.3f %%\n", (float)(100 * losses) / (float)actual_size);
+    }
     
     return EXIT_SUCCESS;
 }

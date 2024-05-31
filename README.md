@@ -39,7 +39,7 @@ To correct a key schedule that lost bits through the binary erasure channel, exe
 
 Where filename contains an AES key schedule that went through the binary erasure channel. For an example of formatting see './samples/aes-128-bin_erasure.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 bin-erasure -v=false'). The key schedule is represented as a grid of binary strings. Missing bits are represented with an 'X'.
 
-### 3.2 Z-Channel
+#### 3.2 Z-Channel
 
 To correct a key schedule whose bits have flipped as follows:
 
@@ -53,7 +53,11 @@ Execute:
 
 Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of 32-bit-long hexadecimal values.
 
-## Improvements
+## Things missing
+
+### KeyGen
+
+- Add an option to randomly generate 192 and 256 key schedules
 
 ### Binary Erasure Channel
 

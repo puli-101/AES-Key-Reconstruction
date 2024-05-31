@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
     //Graphic parse confirmation
     if (VERBOSE) {
-        printf("Parsed input : \n");
+        print_color(stdout,"Parsed input :","yellow",'\n');
         print_grid();
         printf("\nType : AES-%d\nNumber of unknown bits : %d\n",key_length,nb_unknown);
     }
@@ -235,7 +235,7 @@ void correct() {
     int solved = 0, delta;
 
     if (VERBOSE)
-        printf("Preliminary resolution...\n");
+        print_color(stdout, "\nPreliminary resolution...","yellow",'\n');
 
     do {
         delta = core(1);
@@ -251,11 +251,11 @@ void correct() {
     }
 
     if (VERBOSE) {
-        printf("Beginning recursive dissemination...\n");
+        print_color(stdout, "Beginning recursive dissemination...","yellow",'\n');
     }
     //print_list(unresolved);
     if (!propagate(unresolved)) {
-        printf("No solutions found !\n");
+        print_color(stdout,"No solutions found !", "red", '\n');
     }    
 }
 
@@ -303,7 +303,7 @@ int check_grid() {
     }
 
     if (VERBOSE) {
-        printf("\nSolution :\n");
+        print_color(stdout, "\n1 Match Found","green",'\n');
     }
     
     print_schedule(exp_key,rows,columns);

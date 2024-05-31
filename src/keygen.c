@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
         //si on donne pas une clef en entree alors 
         //on genere une clef aleatoire de 128 bits
         if (VERBOSE)
-            printf("Randomly generated 128-bit key : ");
+            print_color(stdout,"Randomly generated 128-bit key :","yellow",'\n'); 
         srand(time(NULL));  
         for (int i = 0; i < 4; i++) {
             key[i] = rand();
@@ -96,13 +96,13 @@ int main(int argc, char** argv) {
                 printf("%08x ",key[i]);
         }
         if (VERBOSE)
-            printf("\n");
+            printf("\n\n");
     }
 
     calc_key_schedule();
 
     if (VERBOSE)
-        printf("Derived key scheduled :\n");
+        print_color(stdout,"Derived key scheduled :","yellow",'\n');
     
     print_schedule(exp_key, rounds+1, key_size/32);
 
