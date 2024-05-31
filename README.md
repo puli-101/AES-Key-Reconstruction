@@ -39,5 +39,11 @@ To correct a key schedule that lost bits through the binary erasure channel, exe
 
 Where filename contains an AES key schedule that went through the binary erasure channel. For an example of formatting see './samples/aes-128-bin_erasure.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 bin-erasure -v=false'). The key schedule is represented as a grid of binary strings. Missing bits are represented with an 'X'.
 
-Improvements :
+## Improvements
+
+### Binary Erasure Channel
+
 - In the core resolution cycle we can add a 4th case that includes the analysis of the first column
+- We can immediatly determine the AES key given a round key for AES-128 and two round keys for AES-256
+- Correct AES-256 key schedule (each round should contain 128 bit blocks)
+- Once we know 4 consecutive words of an AES-128 key schedule we can derive all other subkeys
