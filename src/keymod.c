@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdint.h>
 #include "util.h"
-#define MAX_SIZE 2048
+#define MAX_SIZE 4096
 
 //sample execution : ./bin/keymod samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 

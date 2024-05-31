@@ -55,6 +55,10 @@ Where filename contains an AES key schedule that went through the Z noisy channe
 
 ## Things missing
 
+### General Corrections
+
+- Correct key extraction (errors during keymod)
+
 ### KeyGen
 
 - Add an option to randomly generate 192 and 256 key schedules
@@ -65,3 +69,9 @@ Where filename contains an AES key schedule that went through the Z noisy channe
 - We can immediatly determine the AES key given a round key for AES-128 and two round keys for AES-256
 - Correct AES-256 key schedule (each round should contain 128 bit blocks)
 - Once we know 4 consecutive words of an AES-128 key schedule we can derive all other subkeys
+
+## Credits
+
+The inspiration of these error correcting algorithms comes from the following article : 
+
+J. Alex Halderman, Seth D. Schoen, Nadia Heninger, William Clarkson, William Paul, Joseph A. Calandrino, Ariel J. Feldman, Jacob Appelbaum, and Edward W. Felten. 2009. Lest we remember: cold-boot attacks on encryption keys. Commun. ACM 52, 5 (May 2009), 91–98. https://doi.org/10.1145/1506409.1506429
