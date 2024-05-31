@@ -8,7 +8,7 @@ It suffices to execute 'make'. The binary files will be located at ./bin
 
 ## Execution
 
-### Key Schedule Generator
+### 1. Key Schedule Generator
 To generate an AES key schedule, execute 
 
     ./bin/keygen [KEY] [OPTIONS]
@@ -17,7 +17,7 @@ Where KEY represents an AES-128/192/256 key in hexadecimal and OPTIONS include (
 
 If no input is given, then a random AES-128 key schedule is generated.
 
-### Noisy Channels
+### 2. Noisy Channels
 To modify a schedule, execute
 
     ./bin/keymod <file> <probability> <channel_t> [options]
@@ -29,15 +29,27 @@ Where
 - 'channel_t' indicates the type of noisy channel the key schedule goes through. Accepted types include 'bin-sym' for binary symmetric, 'bin-erasure' for binary erasure, and 'z-channel'
 - options include -v=false to disable verbose
 
-### Error Correction
+### 3. Error Correction
 
-#### Binary Erasure Channel
+#### 3.1 Binary Erasure Channel
 
 To correct a key schedule that lost bits through the binary erasure channel, execute
 
     ./bin/correct_bec <file> [options]
 
 Where filename contains an AES key schedule that went through the binary erasure channel. For an example of formatting see './samples/aes-128-bin_erasure.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 bin-erasure -v=false'). The key schedule is represented as a grid of binary strings. Missing bits are represented with an 'X'.
+
+### 3.2 Z-Channel
+
+To correct a key schedule whose bits have flipped as follow 
+
+![Wikipedia Diagram Showing Z-Channel](https://en.wikipedia.org/wiki/Z-channel_(information_theory)#/media/File:Z-channel.svg)
+
+Execute
+
+    ./bin/correct_z <file> <probability> [options]
+
+Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of hexadecimal values.
 
 ## Improvements
 
