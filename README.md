@@ -41,11 +41,13 @@ Where filename contains an AES key schedule that went through the binary erasure
 
 ### 3.2 Z-Channel
 
-To correct a key schedule whose bits have flipped as follow 
+To correct a key schedule whose bits have flipped as follows:
 
-![Wikimedia Diagram Showing Z-Channel](https://upload.wikimedia.org/wikipedia/commons/0/0e/Z-channel.svg)
+<p align="center">
+  <img alt="Wikimedia Diagram Showing Z-Channel" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Z-channel.svg" />
+</p>
 
-Execute
+Execute:
 
     ./bin/correct_z <file> <probability> [options]
 

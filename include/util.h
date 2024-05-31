@@ -4,6 +4,9 @@
 #include "aes.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+//Various functions used throughout all sourcefiles
 
 extern int VERBOSE;
 
@@ -12,6 +15,13 @@ typedef enum {
   BIN_ERASURE,
   BIN_SYMM
 } channel; 
+
+//functions to print in color
+void set_color(FILE*, char*);
+void print_color(FILE*, char*, char*,char);
+char* get_color(char* color);
+
+void print_header(char*,char*);
 
 //returns a random double between 0 and 1
 static inline double randf() {
@@ -41,4 +51,5 @@ int is_empty(list*);
 void free_list(list**);
 list* getFromIndex(list*, int);
 void print_list(list*);
+
 #endif

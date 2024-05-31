@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "aes.h"
 #include "util.h"
 #define MAX_SIZE 8192
@@ -13,16 +14,19 @@ int nb_unknown;             //nombre de bits inconnus
 int rows, columns;
 
 void usage(char* name) {
-    fprintf(stderr,"Usage : %s <filename> [options]\n", name);
-    fprintf(stderr,"Where <filename> contains a corrupted AES key schedule that went through the binary erasure channel\n");
+    print_color(stderr,"Input Formatting Error","red",'\n');
+    print_color(stderr, "Usage :","yellow",' ');
+    fprintf(stderr,"\033[0;36m%s <filename> [options]\033[0m\n", name);
+    fprintf(stderr,"Where \033[0;36m<filename>\033[0m contains a corrupted AES key schedule that went through the binary erasure channel\n");
     fprintf(stderr,"For file formatting details, execute first ./bin/corruption <src_file> <probability> <channel_type> [options] or see ./samples/bin_erasure.txt\n");
-    fprintf(stderr,"\nOptions :\n-verbose : v=true | v=false\n");
+    print_color(stderr, "Options :","yellow",'\n');
+    fprintf(stderr,"- \033[0;36mverbose\033[0m : v=true | v=false\n");
     exit(EXIT_FAILURE);
 }
 
 void parse_input(char*, int);
 
-void correct_128();
+void correct();
 
 void print_grid();
 
@@ -34,6 +38,12 @@ int main(int argc, char** argv) {
     if (argc < 2) {
         usage(argv[0]);
     }
+
+    for (int i = 2; i < argc; i++) {
+        if (!strcmp(argv[i],"-v=false"))
+            VERBOSE = 0;
+    }
+
     char raw[MAX_SIZE];
     char *file = argv[1];
     int size = extract_text(file,raw);
@@ -62,9 +72,7 @@ int main(int argc, char** argv) {
         printf("\nType : AES-%d\nNumber of unknown bits : %d\n",key_length,nb_unknown);
     }
 
-    //Backtrack
-    if (key_length == 128)
-        correct_128();
+    correct();
 
     free_list(&unresolved);
     return EXIT_SUCCESS;
@@ -172,7 +180,7 @@ int core(int deletion) {
         z = iter->data[2]; 
         next = iter->next;  
         if (!(x == 0 || y != 0 || grid[x][y][z] != 'X')) {
-            //smthng to do with sub, rot and rcon  
+            //something to do with sub, rot and rcon  
         }
         iter = next;
     }
@@ -184,29 +192,36 @@ int core(int deletion) {
 //every unknown bit and then tries to spread the partial result to other unknown bits
 int propagate(list* head) {
     if (head == NULL) {
-        printf("Checking validity\n");
+        /*//printf("Checking validity\n");
+        for(list* iter = unresolved; iter; iter = iter->next) {
+            int x = iter->data[0];
+            int y = iter->data[1];
+            int z = iter->data[2];
+            printf("%c",grid[x][y][z]);
+        }
+        printf("\n");*/
         return check_grid();
     }
     int x = head->data[0];
     int y = head->data[1];
     int z = head->data[2];
-    int solved = 0;
+    //int solved = 0;
     if (grid[x][y][z] != 'X') {
-        printf("Skipping (%d,%d,%d)\n",x,y,z);
+        //printf("Skipping (%d,%d,%d), set to %c\n",x,y,z,grid[x][y][z]);
         if (propagate(head->next))
             return 1;
         grid[x][y][z] = 'X';
     } else {
-        printf("1- Trying with 1 : (%d,%d,%d)\n",x,y,z);
+        //printf("1- Trying with 1 : (%d,%d,%d)\n",x,y,z);
         grid[x][y][z] = '1';
-        solved = core(0);
-        printf("- %d more bits resolved \n",solved);
+        while(core(0)); 
+        //printf("- %d more bits resolved \n",solved);
         if (propagate(head->next))
             return 1;
-        printf("2- Trying with 0 : (%d,%d,%d)\n",x,y,z);
+        //printf("2- Trying with 0 : (%d,%d,%d)\n",x,y,z);
         grid[x][y][z] = '0';
-        solved = core(0);
-        printf("- %d more bits resolved \n",solved);
+        while(core(0));
+        //printf("- %d more bits resolved \n",solved);
         if (propagate(head->next)) {
             return 1;
         } else {
@@ -216,7 +231,7 @@ int propagate(list* head) {
     return 0;
 }
 
-void correct_128() {
+void correct() {
     int solved = 0, delta;
 
     if (VERBOSE)
@@ -238,7 +253,7 @@ void correct_128() {
     if (VERBOSE) {
         printf("Beginning recursive dissemination...\n");
     }
-    print_list(unresolved);
+    //print_list(unresolved);
     if (!propagate(unresolved)) {
         printf("No solutions found !\n");
     }    
@@ -274,13 +289,13 @@ int check_grid() {
 
     if (!parse_grid(exp_key))
         return 0;
-
+    
     for (int i = 1; i < rows; i++) {
         for (int j = 0; j < columns; j++) {
             //all possible key schedule operations on a given word
-            if ((j == 0 && !(exp_key[i][j] == exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
-                ((columns > 6 && j%columns == 4) && !(exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
-                (!(exp_key[i][j] == exp_key[i-1][j] ^ exp_key[i][j-1]))){
+            if ((j == 0 && exp_key[i][j] != (exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
+                ((columns > 6 && (j%columns) == 4) && exp_key[i][j] != (exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
+                (j != 0 && !(columns > 6 && (j%columns) == 4) && exp_key[i][j] != (exp_key[i-1][j] ^ exp_key[i][j-1]))) {
                 //print_schedule(exp_key,rows,columns);
                 return 0;
             }

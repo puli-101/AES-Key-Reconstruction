@@ -1,14 +1,14 @@
-FLAGS = -Iinclude
-BINS = keygen keymod correct_bec
+FLAGS = -Iinclude -Wall
+BINS = bin/keygen bin/keymod bin/correct_bec bin/correct_z
 all: $(BINS)
 
 obj/%.o: src/%.c include/%.h
 	mkdir -p obj
 	gcc -g -c $< -o $@ $(FLAGS)
 
-%: src/%.c obj/aes.o obj/util.o
+bin/%: src/%.c obj/aes.o obj/util.o
 	mkdir -p bin
-	gcc -g -o bin/$@ $^ $(FLAGS)
+	gcc -g -o $@ $^ $(FLAGS)
 
 clean:
 	rm -f obj/* bin/*

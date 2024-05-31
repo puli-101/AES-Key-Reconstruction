@@ -9,11 +9,13 @@
 //sample execution : ./bin/keymod samples/aes-128-schedule.txt 0.25 bin-erasure -v=true
 
 void usage(char* name) {
-    fprintf(stderr,"Usage : %s <filename> <probability> <type>\n\n",name);
-    fprintf(stderr,"Where\n- 'filename' contains a -textual- AES key schedule formated as a grid (see ./bin/keygen 's output)\n");
-    fprintf(stderr, "- 'probability' indicates the error probability of every bit and is represented as a float between 0 and 1\n");
-    fprintf(stderr,"- 'type' indicates the type of channel the key schedule will be subjected to. ");
-    fprintf(stderr, "Accepted types include z-channel, bin-symm, and bin-erasure which correspond to the Z-channel, binary symmetric channel, and the binary erasure channel\n");
+    print_header(name, "<filename> <probability> <type> [options]");
+    fprintf(stderr,"Where\n- \033[0;36m'filename'\033[0m\t\tcontains a -textual- AES key schedule formated as a grid (see ./bin/keygen 's output)\n");
+    fprintf(stderr, "- \033[0;36m'probability'\033[0m \tindicates the error probability of every bit and is represented as a float between 0 and 1\n");
+    fprintf(stderr,"- \033[0;36m'type'\033[0m\t\tindicates the type of channel the key schedule will be subjected to. ");
+    fprintf(stderr, "\nAccepted types include \033[0;32mz-channel\033[0m, \033[0;32mbin-symm\033[0m, and \033[0;32mbin-erasure\033[0m which correspond to the Z-channel, binary symmetric channel, and the binary erasure channel\n");
+    print_color(stderr, "Options :","yellow",'\n');
+    fprintf(stderr,"- \033[0;36mverbose\033[0m : -v=true | -v=false\n");
     exit(EXIT_FAILURE);
 }
 

@@ -30,9 +30,10 @@ void parse_input(char* skey) {
 }
 
 void usage(char* name) {
-    fprintf(stderr,"Usage : %s [KEY] [-v=false | -v=true]\n\n", name);
-    fprintf(stderr,"Where KEY is a 32, 48 or 64 character long string representing a 128, 192 or 256 bit AES key respectively coded in hexadecimal\n");
-    fprintf(stderr,"And -v=false indicates verbose disabled\n");
+    print_header(name,"[KEY] [-v=false | -v=true]");
+    fprintf(stderr,"Where \033[0;36mKEY\033[0m is a 32, 48 or 64 character long string representing a 128, 192 or 256 bit AES key coded in hexadecimal\n");
+    print_color(stderr,"Options :","yellow", '\n');
+    fprintf(stderr,"-v=false indicates verbose disabled\n");
     exit(-1);
 }
 
