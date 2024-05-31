@@ -7,7 +7,7 @@
 #include "util.h"
 
 static uint32_t key[8];
-static uint32_t exp_key[15][8];
+static uint32_t exp_key[15][4];
 static int key_size = 128; 
 static int rounds = 10;
 
@@ -40,13 +40,14 @@ void usage(char* name) {
 //Classic AES key schedule algorithm 
 void calc_key_schedule() {
     int N = key_size/32;
+    int k = 0;
     for (int i = 0; i < rounds + 1; i ++ ) {
-        for (int j = 0; j < N; j++) {
-            if (i == 0) {
+        for (int j = 0; j < 4; j++, k++) {
+            if (k < N) {
                 exp_key[i][j] = key[j];
-            } else if (j == 0) {
+            } else if (k%N == 0) {
                 exp_key[i][j] = exp_key[i-1][j] ^ sub(rot(exp_key[i-1][N-1])) ^ (((uint32_t)rcon[i]) << 24);
-            } else if (N > 6 && j%N == 4) {
+            } else if (N > 6 && k%N == 4) {
                 exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]);
             } else {
                 exp_key[i][j] = exp_key[i-1][j] ^ exp_key[i][j-1];
@@ -104,7 +105,7 @@ int main(int argc, char** argv) {
     if (VERBOSE)
         print_color(stdout,"Derived key scheduled :","yellow",'\n');
     
-    print_schedule(exp_key, rounds+1, key_size/32);
+    print_schedule(exp_key, rounds+1);
 
     return EXIT_SUCCESS;
 }

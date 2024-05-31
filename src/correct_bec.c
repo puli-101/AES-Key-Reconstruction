@@ -7,7 +7,7 @@
 
 //sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
 
-char grid[15][8][33];       //representation ascii d'un key schedule
+char grid[15][4][33];       //representation ascii d'un key schedule
 int key_length;             //taille de la clef aes (128,192,256)
 list* unresolved;           //liste de cordonnees des bits inconnus
 int nb_unknown;             //nombre de bits inconnus
@@ -71,7 +71,6 @@ int main(int argc, char** argv) {
         print_grid();
         printf("\nType : AES-%d\nNumber of unknown bits : %d\n",key_length,nb_unknown);
     }
-
     correct();
 
     free_list(&unresolved);
@@ -124,7 +123,7 @@ int core(int deletion) {
         x = iter->data[0];
         y = iter->data[1];
         z = iter->data[2]; 
-        if (!(x == 0 || y == 0 || grid[x][y][z] != 'X') 
+        if (!(x == 0 || y == 0 || grid[x][y][z] != 'X')  && y != 4 // <- special case when y = 4
                 && !(grid[x-1][y][z] == 'X' || grid[x][y-1][z] == 'X')) {
             top = grid[x-1][y][z];
             left = grid[x][y-1][z];
@@ -142,7 +141,7 @@ int core(int deletion) {
         y = iter->data[1];
         z = iter->data[2];  
         next = iter->next;
-        if (!(x == (rows - 1) || y == 0 || grid[x][y][z] != 'X') &&
+        if (!(x == (rows - 1) || y == 0 || grid[x][y][z] != 'X') && y != 4 && //<- special rules when y = 4
                 !(grid[x+1][y][z] == 'X' || grid[x+1][y-1][z] == 'X')) { 
             
             bottom = grid[x+1][y][z];
@@ -161,7 +160,7 @@ int core(int deletion) {
         y = iter->data[1];
         z = iter->data[2]; 
         next = iter->next;  
-        if (!(x == 0 || y == (columns - 1) || grid[x][y][z] != 'X') 
+        if (!(x == 0 || y == (columns - 1) || grid[x][y][z] != 'X') && y != 3
                 && !(grid[x][y+1][z] == 'X' || grid[x-1][y+1][z] == 'X')) {
             right = grid[x][y+1][z];
             tright = grid[x-1][y+1][z];
@@ -174,17 +173,10 @@ int core(int deletion) {
     }
 
     //first column resolution
-    for (list* iter = unresolved; iter;) {
-        x = iter->data[0];
-        y = iter->data[1];
-        z = iter->data[2]; 
-        next = iter->next;  
-        if (!(x == 0 || y != 0 || grid[x][y][z] != 'X')) {
-            //something to do with sub, rot and rcon  
-        }
-        iter = next;
-    }
+    // TODO
 
+    //fourth column resolution
+    // TODO
     return solved;
 }
 
@@ -192,8 +184,10 @@ int core(int deletion) {
 //every unknown bit and then tries to spread the partial result to other unknown bits
 int propagate(list* head) {
     if (head == NULL) {
-        /*//printf("Checking validity\n");
-        for(list* iter = unresolved; iter; iter = iter->next) {
+        //c++;
+        //printf("%d\n",c);
+        //printf("Checking validity\n");
+        /*for(list* iter = unresolved; iter; iter = iter->next) {
             int x = iter->data[0];
             int y = iter->data[1];
             int z = iter->data[2];
@@ -269,10 +263,10 @@ void print_grid() {
 
 //If possible translate the binary string grid into a numeric key schedule and returns 1
 //else: return 0
-int parse_grid(uint32_t schedule[15][8]) {
+int parse_grid(uint32_t schedule[15][4]) {
     char *endPtr;
     for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < columns; j++) {
+        for (int j = 0; j < 4; j++) {
             schedule[i][j] = strtol(grid[i][j], &endPtr, 2); 
             if (endPtr == grid[i][j])
                 return 0;
@@ -285,14 +279,13 @@ int parse_grid(uint32_t schedule[15][8]) {
 
 //Determines if grid represents a valid key schedule
 int check_grid() {
-    uint32_t exp_key[15][8];
-
+    uint32_t exp_key[15][4];
+    
     if (!parse_grid(exp_key))
         return 0;
     
     for (int i = 1; i < rows; i++) {
         for (int j = 0; j < columns; j++) {
-            //all possible key schedule operations on a given word
             if ((j == 0 && exp_key[i][j] != (exp_key[i-1][j] ^ sub(rot(exp_key[i-1][columns-1])) ^ (((uint32_t)rcon[i]) << 24))) ||
                 ((columns > 6 && (j%columns) == 4) && exp_key[i][j] != (exp_key[i-1][j] ^ sub(exp_key[i][j-1]))) ||
                 (j != 0 && !(columns > 6 && (j%columns) == 4) && exp_key[i][j] != (exp_key[i-1][j] ^ exp_key[i][j-1]))) {
@@ -306,7 +299,7 @@ int check_grid() {
         print_color(stdout, "\n1 Match Found","green",'\n');
     }
     
-    print_schedule(exp_key,rows,columns);
+    print_schedule(exp_key,rows);
 
     return 1;
 }

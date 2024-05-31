@@ -46,7 +46,7 @@ int extract_text(char* file, char* buffer) {
     fseek (f, 0, SEEK_END);
     length = ftell (f);
     fseek (f, 0, SEEK_SET);
-    fread (buffer, 1, length, f);
+    fread (buffer, sizeof(char), length, f);
     fclose(f);
     return length;
 }

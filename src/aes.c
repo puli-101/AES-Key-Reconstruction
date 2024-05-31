@@ -54,9 +54,9 @@ uint32_t rot(uint32_t n) {
 }
 
 //prints an AES key schedule of a specific number of rounds and words per round
-void print_schedule(uint32_t schedule[15][8], int rounds, int nb_words) {
+void print_schedule(uint32_t schedule[15][4], int rounds) {
     for(int i = 0; i < rounds; i++) {
-        for(int j = 0; j < nb_words; j++) {
+        for(int j = 0; j < 4; j++) {
             printf("%08x ",schedule[i][j]);
         }
         printf("\n");

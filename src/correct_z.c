@@ -7,7 +7,7 @@
 
 //sample execution : ./bin/correct_z samples/aes-128-z_channel.txt 0.0625 -v=false
 
-uint32_t grid[15][8];       //representation d'un key schedule
+uint32_t grid[15][4];       //representation d'un key schedule
 int key_length;             //taille de la clef aes (128,192,256)
 list* unresolved;           //liste de cordonnees des bits inconnus
 int nb_unknown;             //nombre de bits inconnus
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     parse_input(raw,size);
     if (VERBOSE) {
         print_color(stdout,"Parsed input : ","yellow",'\n');
-        print_schedule(grid,rounds,4);
+        print_schedule(grid,rounds);
     }
     
     determine_ambiguity();

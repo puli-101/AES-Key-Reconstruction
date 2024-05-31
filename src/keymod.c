@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
     int losses = 0;
     int actual_size = 0;
     for (int i = 0; i < len; i++) {
+        if (schedule[i] == '\0' || schedule[i] == 0) break;
         if (schedule[i] == ' ' || schedule[i] == '\n') {
             printf("%c",schedule[i]);
             continue;

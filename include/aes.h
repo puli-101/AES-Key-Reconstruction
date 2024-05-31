@@ -15,6 +15,6 @@ uint32_t sub(uint32_t n);
 uint32_t rot(uint32_t n);
 
 //prints an AES key schedule of a specific number of rounds and words per round
-void print_schedule(uint32_t schedule[15][8], int rounds, int nb_words);
+void print_schedule(uint32_t schedule[15][4], int rounds);
 
 #endif
