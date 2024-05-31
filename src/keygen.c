@@ -9,7 +9,7 @@
 static uint32_t key[8];
 static uint32_t exp_key[15][4];
 static int key_size = 128; 
-static int rounds = 10;
+static int rounds = 11;
 
 //Given 'skey' a string representing a k-bit long number in hexadecimal
 //it casts every 8 consecutive characters into a 32-bit word
@@ -40,19 +40,17 @@ void usage(char* name) {
 //Classic AES key schedule algorithm 
 void calc_key_schedule() {
     int N = key_size/32;
-    int k = 0;
-    for (int i = 0; i < rounds + 1; i ++ ) {
-        for (int j = 0; j < 4; j++, k++) {
-            if (k < N) {
-                exp_key[i][j] = key[j];
-            } else if (k%N == 0) {
-                exp_key[i][j] = exp_key[i-1][j] ^ sub(rot(exp_key[i-1][N-1])) ^ (((uint32_t)rcon[i]) << 24);
-            } else if (N > 6 && k%N == 4) {
-                exp_key[i][j] = exp_key[i-1][j] ^ sub(exp_key[i][j-1]);
-            } else {
-                exp_key[i][j] = exp_key[i-1][j] ^ exp_key[i][j-1];
-            }
-        } 
+    for (int i = 0; i < 4 * rounds; i ++ ) {
+        if (i < N) {
+            exp_key[0][i] = key[i];
+        } else if (i%N == 0) {
+            exp_key[0][i] = exp_key[0][i-N] ^ sub(rot(exp_key[0][i-1])) ^ (((uint32_t)rcon[i/N]) << 24);
+        } else if (N > 6 && i%N == 4) {
+            exp_key[0][i] = exp_key[0][i-N] ^ sub(exp_key[0][i-1]);
+        } else {
+            exp_key[0][i] = exp_key[0][i-N] ^ exp_key[0][i-1];
+        }
+        
     }
 }
 
@@ -72,7 +70,7 @@ int main(int argc, char** argv) {
         else if (len == 64 || len == 48 || len == 32) {
             random = 0;
             key_size = len * 4;
-            rounds = 10 + (key_size - 128) / 32;
+            rounds += (key_size - 128) / 32;
             skey = argv[i];
         } 
         //else -> erreur format
@@ -105,7 +103,7 @@ int main(int argc, char** argv) {
     if (VERBOSE)
         print_color(stdout,"Derived key scheduled :","yellow",'\n');
     
-    print_schedule(exp_key, rounds+1);
+    print_schedule(exp_key, rounds);
 
     return EXIT_SUCCESS;
 }
