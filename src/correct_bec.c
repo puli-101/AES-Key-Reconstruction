@@ -5,6 +5,7 @@
 #include "util.h"
 #define MAX_SIZE 8192
 
+//Naive key reconstruction algorithm for the binary erasure channel
 //sample execution : ./bin/correct_bec samples/aes-128-bin_erasure.txt -v=false
 
 char grid[15][4][33];       //representation ascii d'un key schedule
