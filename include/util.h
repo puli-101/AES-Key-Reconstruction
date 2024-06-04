@@ -2,6 +2,7 @@
 #define __UTIL_H__
 
 #include "aes.h"
+#include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,22 +43,5 @@ char ascii_xor(char a, char b);
 
 //returns the nth byte of a 4-byte word (starting from 0)
 uint8_t get_byte_from_word(uint32_t,int);
-
-//DOUBLE LINKED LIST FUNCTIONS
-typedef struct t_list {
-  struct t_list* next;
-  struct t_list* prev;
-  int size;
-  int* data;
-} list;
-
-void insert(list**, int*, int);
-void delete_elt(list**, list*);
-void check(void*);
-void free_cell(list*);
-int is_empty(list*);
-void free_list(list**);
-list* getFromIndex(list*, int);
-void print_list(list*);
 
 #endif

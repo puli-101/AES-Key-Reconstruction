@@ -4,15 +4,17 @@
 #include "aes.h"
 #include "util.h"
 #include <limits.h>
+#include <math.h>
 #define MAX_SIZE 8192
 #define CANDIDATES 10
 #define NB_BLOCKS 4
 #define BLOCK_SIZE 4
-
+#define SUB_SCHED_SIZE 352 //size of a subschedule in bits
 //Naive key reconstruction algorithm for AES-128 keys that went through the binary noisy channels
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 
 uint8_t grid[ROUNDS][NB_BYTES];       //representation ascii d'un key schedule
+double proba0;
 
 typedef struct {
     uint8_t sub_key[BLOCK_SIZE];
@@ -21,11 +23,12 @@ typedef struct {
 } candidate;
 
 candidate cand_lst[NB_BLOCKS][CANDIDATES];
+void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index);
 
 void update_candidates(candidate*);
 void print_candidates();
 void correct();
-void calc_prob(candidate*);
+void calc_candidate_likelihood(candidate*);
 void print_candidate_block(int block);
 
 void usage(char* name) {
@@ -48,7 +51,7 @@ int main(int argc, char** argv) {
         usage(argv[0]);
     }
 
-    for (int i = 2; i < argc; i++) {
+    for (int i = 4; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
     }
@@ -65,6 +68,18 @@ int main(int argc, char** argv) {
         print_new_schedule(grid);
         print_color(stdout,"\nBruteforcing kschedule...","yellow",'\n');
     }
+    /*uint8_t subschedule[ROUNDS][BLOCK_SIZE];
+    printf("0 :");
+    subschedule[0][0] = 0x00;
+    subschedule[0][1] = 0x00;
+    subschedule[0][2] = 0x00;
+    subschedule[0][3] = 0x88;
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        subschedule[0][i] = grid[0][i];
+        printf("%02x ",subschedule[0][i]);
+    }
+    printf("\n");
+    calc_subschedule(subschedule,0);*/
     correct();
     print_candidates();
 
@@ -115,15 +130,15 @@ void correct() {
         cand->block_nb = i;
         //bruteforcing over all possible initial vectors
         for (uint32_t j = 0; j < UINT_MAX; j++) {
-            if (VERBOSE && (j % 214748364 == 0)) {
+            if (VERBOSE && (j % 26843546 == 0)) {
                 print_progress(prcntg);
-                prcntg += 0.05;
+                prcntg += 0.00625;
             }
 
             for (int k = 0; k < BLOCK_SIZE; k++)
                 cand->sub_key[k] = get_byte_from_word(j,k);
             
-            calc_prob(cand);
+            calc_candidate_likelihood(cand);
             update_candidates(cand);
         }
         
@@ -174,7 +189,54 @@ void update_candidates(candidate* cand) {
 }
 
 
-void calc_prob(candidate* cand) {
+void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
+    for (int i = 1; i < ROUNDS; i++) {
+        subschedule[i][0] = subschedule[i-1][1] ^ sbox[subschedule[i-1][0]];
+        subschedule[i][1] = subschedule[i-1][2];
+        subschedule[i][2] = subschedule[i-1][3];
+        subschedule[i][3] = subschedule[i-1][0];
+        if (index % 4 == 2)
+            subschedule[i][0] ^= rcon[i];
+        index = (index + 1) % 4;
+        /*printf("%d :",i);
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            printf("%02x ", subschedule[i][j]);
+        printf("\n");*/
+    }
     
 }
 
+int choose(int n, int k) {
+    return tgamma(n + 1)/(tgamma(n + 1) * (tgamma(n - k + 1)));
+}
+
+int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
+    int diff = 0;
+    uint8_t byte_diff;
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        byte_diff = subschedule[1][i] ^ grid[1][(i+4)%NB_BYTES];
+        for (int j = 0; j < 8; j++) {
+            if ( (1 << j) & byte_diff)
+                diff++;
+        }
+    }
+    return diff;
+}
+
+void calc_candidate_likelihood(candidate* cand) {
+    uint8_t subschedule[ROUNDS][BLOCK_SIZE];
+    int diff;
+    for (int i = 0; i < BLOCK_SIZE; i++)
+        subschedule[0][i] = cand->sub_key[i];
+    calc_subschedule(subschedule, cand->block_nb);
+    diff = calc_diff(subschedule, cand->block_nb);
+    //change 8 for something else
+    cand->prob = choose(32,diff) * pow(proba0, diff) * pow((1.0-proba0), 32 - diff);
+}
+
+//Salut, 
+//Je sais pas si je me trompe mais pour calculer les probas de chaque clé candidat je considère une variable aléatoire X de loi binomiale de paramètres n : la taille en bits du segment du key schedule engendré par la sous clé candidate et p la probabilité qu'un bit soit inversé
+//et puis la proba de la sous clé candidat est la proba de { X = DistanceHamming(sous key schedule engendré et sous key schedule dans la RAM) },
+
+// est-ce que c'est le cas ou faut il faire une modelisation des p
+//Alternativement ce que je pensait de faire etait d'enchainer et additioner plusieurs probas conditionels du style "proba qu'un certain bit soit egal a 'x' sachant que le bit du round dernier etait egal a 'y'" mais je ne sais pas si la premiere option suffit
