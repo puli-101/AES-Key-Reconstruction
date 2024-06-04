@@ -3,19 +3,23 @@
 #include <string.h>
 #include "aes.h"
 #include "util.h"
+#include <limits.h>
 #define MAX_SIZE 8192
 #define CANDIDATES 10
+#define NB_BLOCKS 4
+#define BLOCK_SIZE 4
 //Naive key reconstruction algorithm for AES-128 keys that went through the binary noisy channels
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 
 uint8_t grid[ROUNDS][NB_BYTES];       //representation ascii d'un key schedule
 
 typedef struct {
-    uint8_t key[WORDS][WORDS];
+    uint8_t sub_key[BLOCK_SIZE];
+    int block_nb;
     double prob;
 } candidate;
 
-candidate cand_lst[CANDIDATES];
+candidate cand_lst[NB_BLOCKS][CANDIDATES];
 
 void usage(char* name) {
     print_header(name,"<filename> <delta0> <delta1> [options]");
@@ -54,6 +58,7 @@ int main(int argc, char** argv) {
         print_new_schedule(grid);
     }
     correct();
+    print_candidates();
 
     return EXIT_SUCCESS;
 }
@@ -84,5 +89,51 @@ void parse_input(char* raw, int size) {
 }
 
 void correct() {
-    
+    candidate* cand = (candidate*)malloc(sizeof(candidate));
+    check(cand);
+    for (int i = 0; i < NB_BLOCKS; i++) {
+        cand->block_nb = i;
+        //bruteforcing over all possible initial vectors
+        for (uint32_t j = 0; j < UINT_MAX; j++) {
+            for (int k = 0; k < BLOCK_SIZE; k++)
+                cand->sub_key[k] = get_byte_from_word(j,k);
+        }
+        calc_prob(cand);
+        update_candidates(cand);
+    }
+    free(cand);
+}
+
+void print_candidates() {
+    for (int i = 0; i < NB_BLOCKS; i++) {
+        for (int j = 0; j < CANDIDATES; j++) {
+            set_color(stdout,"yellow");
+            printf("Candidate %d for block %d : ", i, j);
+            set_color(stdout,"default");
+            printf("%f %% likelihood\n", cand_lst[i][j].prob);
+            for (int k = 0; k < 4; k++) 
+                printf("%02x ", cand_lst[i][j].sub_key[k]);
+            printf("\n");
+        }
+    }
+
+}
+
+void update_candidates(candidate* cand) {
+    int block = cand->block_nb;
+    double min_prob = 1;
+    candidate* to_replace = NULL;
+    //search min
+    for (int i = 0; i < CANDIDATES; i++) {
+        if (cand_lst[block][i].prob < min_prob) {
+            min_prob = cand_lst[block][i].prob;
+            to_replace = &cand_lst[block][i];
+        }
+    }
+    //replacement
+    if (to_replace != NULL) {
+        to_replace->prob = cand->prob;
+        for (int i = 0; i < BLOCK_SIZE; i++)
+            to_replace->sub_key[i] = cand->sub_key[i];
+    }
 }
