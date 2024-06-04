@@ -119,7 +119,7 @@ void correct() {
     candidate* cand = (candidate*)malloc(sizeof(candidate));
     double prcntg;
 
-    check(cand);
+    //check(cand);
     for (int i = 0; i < NB_BLOCKS; i++) {
         if (VERBOSE) {
             set_color(stdout,"yellow");
