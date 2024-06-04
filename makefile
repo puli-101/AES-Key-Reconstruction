@@ -1,5 +1,5 @@
 FLAGS = -Iinclude -Wall
-BINS = bin/keygen bin/keymod bin/correct_bec bin/correct_z
+BINS = bin/keygen bin/keymod bin/correct_bec bin/correct_z bin/new_schedule
 all: $(BINS)
 
 obj/%.o: src/%.c include/%.h
