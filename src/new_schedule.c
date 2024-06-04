@@ -6,9 +6,6 @@
 #include <time.h>
 #include "aes.h"
 #include "util.h"
-#define NB_BYTES 16
-#define ROUNDS 11
-#define BLOCKS 4
 
 static uint8_t key[NB_BYTES];
 static uint8_t s[ROUNDS][NB_BYTES];
@@ -55,13 +52,13 @@ void calc_schedule() {
     int index;
 
     for (int i = 1; i < ROUNDS; i++) {
-        for (int j = 0; j < BLOCKS; j++) {
+        for (int j = 0; j < WORDS; j++) {
             index = (13 + 4 * j)%16;
             s[i][4 * j] = s[i-1][index] ^ sbox[s[i][index-1]];
         }
         s[i][12] ^= rcon[i];
 
-        for (int j = 0; j < BLOCKS; j++) {
+        for (int j = 0; j < WORDS; j++) {
             index = (14 + 4 * j)%16;
             s[i][4 * j + 1] = s[i-1][index];
             index = (15 + 4 * j)%16;
@@ -71,22 +68,6 @@ void calc_schedule() {
         }
     }
 }
-
-void print_new_schedule(uint8_t s[11][16], uint8_t *key) {
-    if (key != NULL && VERBOSE) {
-        print_color(stdout,"Original Key","yellow",'\n');
-        print_key();
-        print_color(stdout, "\n\nAlternative Schedule Representation","yellow",'\n');
-    }
-    for (int i = 0; i < ROUNDS; i++) {
-        for (int j = 0; j < NB_BYTES; j++) {
-            if (j%4 == 0) printf(" ");
-            printf("%02x",s[i][j]);
-        }
-        printf("\n");
-    }
-}
-
 
 
 void parse_input(char* skey) {
@@ -137,6 +118,12 @@ int main(int argc, char** argv) {
     }
 
     calc_schedule();
-    print_new_schedule(s,key);
+
+    if (VERBOSE) {
+        print_color(stdout,"Original Key","yellow",'\n');
+        print_key();
+        print_color(stdout, "\n\nAlternative Schedule Representation","yellow",'\n');
+    }
+    print_new_schedule(s);
     return 0;
 }
