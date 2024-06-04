@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <limits.h>
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -28,6 +30,11 @@ char* get_color(char* color);
 void print_header(char*,char*);
 
 void print_progress(double percentage);
+
+//calculates combinations n choose k
+static inline double choose(int n, int k) {
+  return (tgamma(n + 1)/(tgamma(k + 1) * (tgamma(n - k + 1))));
+}
 
 //returns a random double between 0 and 1
 static inline double randf() {

@@ -1,6 +1,6 @@
 FLAGS = -Iinclude -Wall -lm
 
-OBJ = obj/aes.o obj/util.o obj/list.o
+OBJ = obj/aes.o obj/util.o obj/list.o obj/candidate_handler.o
 
 CORRECTORS = bin/alternative_bsc bin/erasures bin/z_channel
 GENERATORS = bin/classic_aes bin/erasures bin/alternative_aes bin/noise

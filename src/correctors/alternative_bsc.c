@@ -3,33 +3,19 @@
 #include <string.h>
 #include "aes.h"
 #include "util.h"
-#include <limits.h>
-#include <math.h>
+#include "candidate_handler.h"
 #define MAX_SIZE 8192
-#define CANDIDATES 10
-#define NB_BLOCKS 4
-#define BLOCK_SIZE 4
 #define SUB_SCHED_SIZE 352 //size of a subschedule in bits
 //Naive key reconstruction algorithm for AES-128 keys that went through the binary noisy channels
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 
 uint8_t grid[ROUNDS][NB_BYTES];       //representation ascii d'un key schedule
-double proba0;
+double proba0, proba1;
 
-typedef struct {
-    uint8_t sub_key[BLOCK_SIZE];
-    int block_nb;
-    double prob;
-} candidate;
-
-candidate cand_lst[NB_BLOCKS][CANDIDATES];
 void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index);
-
-void update_candidates(candidate*);
-void print_candidates();
-void correct();
 void calc_candidate_likelihood(candidate*);
-void print_candidate_block(int block);
+
+void correct();
 
 void usage(char* name) {
     print_header(name,"<filename> <delta0> <delta1> [options]");
@@ -57,8 +43,22 @@ int main(int argc, char** argv) {
     }
 
     char raw[MAX_SIZE];
-    char *file = argv[1];
+    char *file = argv[1], *endPtr;
     int size = extract_text(file,raw);
+
+    //traitement des options
+    proba0 = strtod( argv[2], &endPtr); 
+    if (endPtr == argv[2]) {
+        print_color(stderr,"Format error : cannot cast third argument into double","red",'\n');
+        usage(argv[0]);
+    } 
+
+    //traitement des options
+    proba1 = strtod( argv[3], &endPtr); 
+    if (endPtr == argv[3]) {
+        print_color(stderr,"Format error : cannot cast fourth argument into double","red",'\n');
+        usage(argv[0]);
+    }  
 
     parse_input(raw, size);
     
@@ -81,7 +81,9 @@ int main(int argc, char** argv) {
     printf("\n");
     calc_subschedule(subschedule,0);*/
     correct();
-    print_candidates();
+
+    //print_color(stdout,"\nRecap","yellow",'\n');
+    //print_candidates();
 
     return EXIT_SUCCESS;
 }
@@ -129,7 +131,7 @@ void correct() {
         }
         cand->block_nb = i;
         //bruteforcing over all possible initial vectors
-        for (uint32_t j = 0; j < UINT_MAX; j++) {
+        for (uint32_t j = 0; j < UINT_MAX; j++) { 
             if (VERBOSE && (j % 26843546 == 0)) {
                 print_progress(prcntg);
                 prcntg += 0.00625;
@@ -150,45 +152,6 @@ void correct() {
     free(cand);
 }
 
-void print_candidate_block(int block) {
-    set_color(stdout,"yellow");
-    printf("Possible candidates for block %d:\n",block);
-    for (int j = 0; j < CANDIDATES; j++) {
-        set_color(stdout,"cyan");
-        printf("- Candidate %d : ", j);
-        set_color(stdout,"default");
-        for (int k = 0; k < 4; k++) 
-            printf("%02x ", cand_lst[block][j].sub_key[k]);
-        printf("\n%.3f %% likelihood\n\n", cand_lst[block][j].prob);
-    }
-}
-
-void print_candidates() {
-    for (int i = 0; i < NB_BLOCKS; i++) {
-        print_candidate_block(i);
-    }
-}
-
-void update_candidates(candidate* cand) {
-    int block = cand->block_nb;
-    double min_prob = 1;
-    candidate* to_replace = NULL;
-    //search min
-    for (int i = 0; i < CANDIDATES; i++) {
-        if (cand_lst[block][i].prob < min_prob) {
-            min_prob = cand_lst[block][i].prob;
-            to_replace = &cand_lst[block][i];
-        }
-    }
-    //replacement
-    if (to_replace != NULL && min_prob < cand->prob) {
-        to_replace->prob = cand->prob;
-        for (int i = 0; i < BLOCK_SIZE; i++)
-            to_replace->sub_key[i] = cand->sub_key[i];
-    }
-}
-
-
 void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
     for (int i = 1; i < ROUNDS; i++) {
         subschedule[i][0] = subschedule[i-1][1] ^ sbox[subschedule[i-1][0]];
@@ -204,10 +167,6 @@ void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
         printf("\n");*/
     }
     
-}
-
-int choose(int n, int k) {
-    return tgamma(n + 1)/(tgamma(n + 1) * (tgamma(n - k + 1)));
 }
 
 int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
