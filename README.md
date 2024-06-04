@@ -41,6 +41,7 @@ Where filename contains an AES key schedule that went through the binary erasure
 
 The solution presented in src/correct_bec.c correspond to a naive key reconstruction algorithm. It is able to correct a key schedule that has up to 40% erasures for AES-128 in a reasonable amount of time. To exploit the linearity of AES a more advanced version would stop once we have a single round key (for AES-128) or two consecutive round keys for AES-256.
 
+<!--
 #### 3.2 Z-Channel
 
 To correct a key schedule whose bits have flipped as follows:
@@ -54,6 +55,7 @@ Execute:
     ./bin/correct_z <file> <probability> [options]
 
 Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of 32-bit-long hexadecimal values.
+-->
 
 ## Things missing
 
