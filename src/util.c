@@ -2,6 +2,21 @@
 
 int VERBOSE = 1;
 
+
+//prints a progress bar on screen
+void print_progress(double percentage) {
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
+
+//returns the nth byte of a 4-byte word (starting from 0)
+uint8_t get_byte_from_word(uint32_t w, int n) {
+    return (uint8_t)(w >> (8 * n));
+}
+
 //print usage header
 void print_header(char* bin_name, char* format) {
     print_color(stderr,"Input Formatting Error","red",'\n');

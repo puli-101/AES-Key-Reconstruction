@@ -52,13 +52,13 @@ void calc_schedule() {
     int index;
 
     for (int i = 1; i < ROUNDS; i++) {
-        for (int j = 0; j < WORDS; j++) {
+        for (int j = 0; j < NB_WORDS; j++) {
             index = (13 + 4 * j)%16;
             s[i][4 * j] = s[i-1][index] ^ sbox[s[i][index-1]];
         }
         s[i][12] ^= rcon[i];
 
-        for (int j = 0; j < WORDS; j++) {
+        for (int j = 0; j < NB_WORDS; j++) {
             index = (14 + 4 * j)%16;
             s[i][4 * j + 1] = s[i-1][index];
             index = (15 + 4 * j)%16;

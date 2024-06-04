@@ -8,6 +8,7 @@
 #define CANDIDATES 10
 #define NB_BLOCKS 4
 #define BLOCK_SIZE 4
+
 //Naive key reconstruction algorithm for AES-128 keys that went through the binary noisy channels
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 
@@ -20,6 +21,12 @@ typedef struct {
 } candidate;
 
 candidate cand_lst[NB_BLOCKS][CANDIDATES];
+
+void update_candidates(candidate*);
+void print_candidates();
+void correct();
+void calc_prob(candidate*);
+void print_candidate_block(int block);
 
 void usage(char* name) {
     print_header(name,"<filename> <delta0> <delta1> [options]");
@@ -37,7 +44,7 @@ void parse_input(char*, int);
 void correct();
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
+    if (argc < 4) {
         usage(argv[0]);
     }
 
@@ -51,11 +58,12 @@ int main(int argc, char** argv) {
     int size = extract_text(file,raw);
 
     parse_input(raw, size);
-
+    
     //Graphic parse confirmation
     if (VERBOSE) {
         print_color(stdout,"Parsed input :","yellow",'\n');
         print_new_schedule(grid);
+        print_color(stdout,"\nBruteforcing kschedule...","yellow",'\n');
     }
     correct();
     print_candidates();
@@ -67,56 +75,83 @@ void parse_input(char* raw, int size) {
     char hex[3], *end;
     int x = 0, y = 0;
 
-    for (int i = 0; i < size - 1; i++) {
+    for (int i = 0; i < size - 1; i+=2) {
         if (raw[i] == '\n' || raw[i] == ' ') continue;
+        if (raw[i] == '\0' || raw[i] == EOF) break;
         hex[0] = raw[i];
         hex[1] = raw[i+1];
         hex[2] = '\0';
         grid[x][y] = strtol(hex, &end, 16); 
-        
             
-        if (end == hex)
+        if (end == hex) {
+            print_color(stdout, "Error while parsing file","red",'\n');
             usage("./executable_name");
+        }
         y++;
         if (y >= NB_BYTES) {
             y = 0;
             x++;
 
-            if (x > ROUNDS) 
+            if (x > ROUNDS) {
+                print_color(stdout, "Error, input file too large","red",'\n');
                 usage("./executable_name");
+            }
         } 
     }
 }
 
 void correct() {
     candidate* cand = (candidate*)malloc(sizeof(candidate));
+    double prcntg;
+
     check(cand);
     for (int i = 0; i < NB_BLOCKS; i++) {
+        if (VERBOSE) {
+            set_color(stdout,"yellow");
+            printf("Beginning bruteforcing of %dth block...\n",(i+1));
+            set_color(stdout,"default");
+            prcntg = 0;
+        }
         cand->block_nb = i;
         //bruteforcing over all possible initial vectors
         for (uint32_t j = 0; j < UINT_MAX; j++) {
+            if (VERBOSE && (j % 214748364 == 0)) {
+                print_progress(prcntg);
+                prcntg += 0.05;
+            }
+
             for (int k = 0; k < BLOCK_SIZE; k++)
                 cand->sub_key[k] = get_byte_from_word(j,k);
+            
+            calc_prob(cand);
+            update_candidates(cand);
         }
-        calc_prob(cand);
-        update_candidates(cand);
+        
+
+        print_progress(1);
+        print_color(stdout, "\nPossible candidates :","yellow",'\n');
+        print_candidate_block(i);
     }
     free(cand);
 }
 
+void print_candidate_block(int block) {
+    set_color(stdout,"yellow");
+    printf("Possible candidates for block %d:\n",block);
+    for (int j = 0; j < CANDIDATES; j++) {
+        set_color(stdout,"cyan");
+        printf("- Candidate %d : ", j);
+        set_color(stdout,"default");
+        for (int k = 0; k < 4; k++) 
+            printf("%02x ", cand_lst[block][j].sub_key[k]);
+        printf("\n%.3f %% likelihood\n\n", cand_lst[block][j].prob);
+    }
+}
+
 void print_candidates() {
     for (int i = 0; i < NB_BLOCKS; i++) {
-        for (int j = 0; j < CANDIDATES; j++) {
-            set_color(stdout,"yellow");
-            printf("Candidate %d for block %d : ", i, j);
-            set_color(stdout,"default");
-            printf("%f %% likelihood\n", cand_lst[i][j].prob);
-            for (int k = 0; k < 4; k++) 
-                printf("%02x ", cand_lst[i][j].sub_key[k]);
-            printf("\n");
-        }
+        print_candidate_block(i);
     }
-
 }
 
 void update_candidates(candidate* cand) {
@@ -131,9 +166,15 @@ void update_candidates(candidate* cand) {
         }
     }
     //replacement
-    if (to_replace != NULL) {
+    if (to_replace != NULL && min_prob < cand->prob) {
         to_replace->prob = cand->prob;
         for (int i = 0; i < BLOCK_SIZE; i++)
             to_replace->sub_key[i] = cand->sub_key[i];
     }
 }
+
+
+void calc_prob(candidate* cand) {
+    
+}
+
