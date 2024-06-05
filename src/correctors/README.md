@@ -10,7 +10,7 @@ Bruteforces all possible values of the initial row of an alternative key schedul
 
 Leurent, G., & Pernot, C. (2021, June). New representations of the AES key schedule. In Annual International Conference on the Theory and Applications of Cryptographic Techniques (pp. 54-84). Cham: Springer International Publishing. https://eprint.iacr.org/2020/1253.pdf
 
-In particular all possible values of [$s_i$, $s_{i+1}$, $s_{i+2}, $s_{i+3}] for {i \in {0,1,2,3}} are enumerated and each candidate is ranked according to its Z-score
+In particular all possible values of [ $s_i$ , $s_{i+1}$ , $s_{i+2}$ , $s_{i+3}$ ] for { $ i \in {0,1,2,3} $} are enumerated and each candidate is ranked according to its Z-score
 
 ## heuristic_bsc.c 
 
