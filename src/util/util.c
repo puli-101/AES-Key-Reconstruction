@@ -1,7 +1,7 @@
 #include "util.h"
 
 int VERBOSE = 1;
-
+int SHORTENED = 0;
 
 //prints a progress bar on screen
 void print_progress(double percentage) {

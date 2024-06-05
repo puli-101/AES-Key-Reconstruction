@@ -19,5 +19,5 @@ extern candidate cand_lst[NB_BLOCKS][CANDIDATES];
 void print_candidate_block(int block);
 void update_candidates(candidate*);
 void print_candidates();
-
+void init_candidates();
 #endif

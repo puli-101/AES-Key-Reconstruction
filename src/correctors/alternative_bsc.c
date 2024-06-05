@@ -11,26 +11,37 @@
 
 uint8_t grid[ROUNDS][NB_BYTES];       //representation ascii d'un key schedule
 double proba0, proba1;
+double std_deviation;
+double expected_value;
 
 void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index);
 void calc_candidate_likelihood(candidate*);
 
 void correct();
+int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int offset);
+
+double z_score(int diff) {
+    return abs_double((((double)diff) - expected_value) / std_deviation);
+}
 
 void usage(char* name) {
     print_header(name,"<filename> <delta0> <delta1> [options]");
     fprintf(stderr,"Where\n - \033[0;36m<filename>\033[0m contains a corrupted AES key schedule that went through a binary noisy channel\n");
     fprintf(stderr,"- \033[0;36m<delta0>\033[0m represents the probability of a bit set to 0 to becoma a 1\n");
     fprintf(stderr,"- \033[0;36m<delta1>\033[0m represents the probability of a bit set to 1 to decay to 0\n");
-    fprintf(stderr,"For file formatting details, execute first ./bin/corruption <src_file> <probability> <channel_type> [options] or see ./samples/sched1_bsc.txt\n");
+    fprintf(stderr,"For file formatting details, execute first ./bin/noise <src_file> <probability> <channel_type> [options] ");
+    fprintf(stderr, "or see ./samples/sched1_bsc.txt\n");
     print_color(stderr, "Options :","yellow",'\n');
-    fprintf(stderr,"- \033[0;36mverbose\033[0m : v=true | v=false\n");
+    fprintf(stderr,"- \033[0;36mverbose\033[0m : v=true | v=false (true by default)\n");
+    fprintf(stderr,"- \033[0;36mshortened list of candidate key schedules\033[0m : s=true | s=false (false by default)\n");
     exit(EXIT_FAILURE);
 }
 
 void parse_input(char*, int);
 
 void correct();
+
+void test();
 
 int main(int argc, char** argv) {
     if (argc < 4) {
@@ -40,20 +51,24 @@ int main(int argc, char** argv) {
     for (int i = 4; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
+        if (!strcmp(argv[i],"-s=true"))
+            SHORTENED = 1;
     }
 
     char raw[MAX_SIZE];
     char *file = argv[1], *endPtr;
     int size = extract_text(file,raw);
 
-    //traitement des options
+    //Probability of decay from 0 to 1
     proba0 = strtod( argv[2], &endPtr); 
     if (endPtr == argv[2]) {
         print_color(stderr,"Format error : cannot cast third argument into double","red",'\n');
         usage(argv[0]);
     } 
-
-    //traitement des options
+    std_deviation = sqrt(SUB_SCHED_SIZE * proba0 * (1-proba0));
+    expected_value = SUB_SCHED_SIZE * proba0;
+    
+    //Probability of decay from 1 to 0
     proba1 = strtod( argv[3], &endPtr); 
     if (endPtr == argv[3]) {
         print_color(stderr,"Format error : cannot cast fourth argument into double","red",'\n');
@@ -62,24 +77,15 @@ int main(int argc, char** argv) {
 
     parse_input(raw, size);
     
-    //Graphic parse confirmation
+    //Surse confirmation
     if (VERBOSE) {
         print_color(stdout,"Parsed input :","yellow",'\n');
         print_new_schedule(grid);
         print_color(stdout,"\nBruteforcing kschedule...","yellow",'\n');
     }
-    /*uint8_t subschedule[ROUNDS][BLOCK_SIZE];
-    printf("0 :");
-    subschedule[0][0] = 0x00;
-    subschedule[0][1] = 0x00;
-    subschedule[0][2] = 0x00;
-    subschedule[0][3] = 0x88;
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        subschedule[0][i] = grid[0][i];
-        printf("%02x ",subschedule[0][i]);
-    }
-    printf("\n");
-    calc_subschedule(subschedule,0);*/
+    
+    //test();
+    init_candidates();
     correct();
 
     //print_color(stdout,"\nRecap","yellow",'\n');
@@ -92,14 +98,13 @@ void parse_input(char* raw, int size) {
     char hex[3], *end;
     int x = 0, y = 0;
 
-    for (int i = 0; i < size - 1; i+=2) {
+    for (int i = 0; i < size - 1; i++) {
         if (raw[i] == '\n' || raw[i] == ' ') continue;
         if (raw[i] == '\0' || raw[i] == EOF) break;
         hex[0] = raw[i];
         hex[1] = raw[i+1];
         hex[2] = '\0';
         grid[x][y] = strtol(hex, &end, 16); 
-            
         if (end == hex) {
             print_color(stdout, "Error while parsing file","red",'\n');
             usage("./executable_name");
@@ -114,25 +119,27 @@ void parse_input(char* raw, int size) {
                 usage("./executable_name");
             }
         } 
+        i++;
     }
 }
 
 void correct() {
     candidate* cand = (candidate*)malloc(sizeof(candidate));
     double prcntg;
-
+    uint32_t nb_iter = 500000 * CANDIDATES;
+    int threshold = ((double)nb_iter * 0.00625);
     //check(cand);
     for (int i = 0; i < NB_BLOCKS; i++) {
         if (VERBOSE) {
             set_color(stdout,"yellow");
-            printf("Beginning bruteforcing of %dth block...\n",(i+1));
+            printf("Beginning bruteforcing of %dth block...\n",i);
             set_color(stdout,"default");
             prcntg = 0;
         }
         cand->block_nb = i;
         //bruteforcing over all possible initial vectors
-        for (uint32_t j = 0; j < UINT_MAX; j++) { 
-            if (VERBOSE && (j % 26843546 == 0)) {
+        for (uint32_t j = 0; j < nb_iter; j++) { 
+            if (VERBOSE && (j % threshold == 0)) {
                 print_progress(prcntg);
                 prcntg += 0.00625;
             }
@@ -146,7 +153,6 @@ void correct() {
         
 
         print_progress(1);
-        print_color(stdout, "\nPossible candidates :","yellow",'\n');
         print_candidate_block(i);
     }
     free(cand);
@@ -158,8 +164,9 @@ void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
         subschedule[i][1] = subschedule[i-1][2];
         subschedule[i][2] = subschedule[i-1][3];
         subschedule[i][3] = subschedule[i-1][0];
-        if (index % 4 == 2)
+        if (index % 4 == 2) {
             subschedule[i][0] ^= rcon[i];
+        }
         index = (index + 1) % 4;
         /*printf("%d :",i);
         for (int j = 0; j < BLOCK_SIZE; j++)
@@ -169,15 +176,33 @@ void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
     
 }
 
-int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
-    int diff = 0;
+//Calculates the hamming distance between a subschedule 
+//i.e. the slice of an alternative key schedule generated by 4 contiguous bytes, and
+//the corresponding subschedule from the originally extracted key schedule 
+//index : {0,1,2,3} refers to the word number in the first round of the alternative schedule
+int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int offset) {
+    int diff = 0, delta = 0;
     uint8_t byte_diff;
-    for (int i = 0; i < BLOCK_SIZE; i++) {
-        byte_diff = subschedule[1][i] ^ grid[1][(i+4)%NB_BYTES];
-        for (int j = 0; j < 8; j++) {
-            if ( (1 << j) & byte_diff)
-                diff++;
+
+    for (int i = 0; i < ROUNDS; i++) {
+        delta = 0;
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            byte_diff = subschedule[i][j] ^ grid[i][(j + 4*(offset+i))%NB_BYTES];
+            for (int k = 0; k < 8; k++) {
+                if ( (1 << k) & byte_diff)
+                    delta++;
+            }
         }
+        /*printf("%d differences in the %dth round ", delta, i);
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            printf("%02x", subschedule[i][j]);
+        }
+        printf(" ");
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            printf("%02x", grid[i][j+(4*(offset+i))%NB_BYTES]);
+        }
+        printf("\n");*/
+        diff += delta;
     }
     return diff;
 }
@@ -190,12 +215,23 @@ void calc_candidate_likelihood(candidate* cand) {
     calc_subschedule(subschedule, cand->block_nb);
     diff = calc_diff(subschedule, cand->block_nb);
     //change 8 for something else
-    cand->prob = choose(32,diff) * pow(proba0, diff) * pow((1.0-proba0), 32 - diff);
+    cand->score = z_score(diff);
 }
 
-//Salut, 
-//Je sais pas si je me trompe mais pour calculer les probas de chaque clé candidat je considère une variable aléatoire X de loi binomiale de paramètres n : la taille en bits du segment du key schedule engendré par la sous clé candidate et p la probabilité qu'un bit soit inversé
-//et puis la proba de la sous clé candidat est la proba de { X = DistanceHamming(sous key schedule engendré et sous key schedule dans la RAM) },
-
-// est-ce que c'est le cas ou faut il faire une modelisation des p
-//Alternativement ce que je pensait de faire etait d'enchainer et additioner plusieurs probas conditionels du style "proba qu'un certain bit soit egal a 'x' sachant que le bit du round dernier etait egal a 'y'" mais je ne sais pas si la premiere option suffit
+void test() {
+    uint8_t subschedule[ROUNDS][BLOCK_SIZE];
+    
+    subschedule[0][0] = 0x00;
+    subschedule[0][1] = 0x00;
+    subschedule[0][2] = 0x00;
+    subschedule[0][3] = 0x88;
+    /*
+    printf("0 :");
+    for (int i = 0; i < BLOCK_SIZE; i++)
+        printf("%02x ",subschedule[0][i]);
+    printf("\n");*/
+    calc_subschedule(subschedule,0);
+    int diff = calc_diff(subschedule,0);
+    printf("Diff : %d \n",diff);
+    printf("Likelihood : %.3f %%\n", z_score(diff));
+}

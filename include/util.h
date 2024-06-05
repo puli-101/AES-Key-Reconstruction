@@ -15,6 +15,7 @@
 //Various functions used throughout all sourcefiles
 
 extern int VERBOSE;
+extern int SHORTENED;
 
 typedef enum {
   Z_CHANNEL,
