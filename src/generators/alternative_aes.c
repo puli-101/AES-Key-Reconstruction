@@ -54,11 +54,7 @@ void calc_schedule() {
     for (int i = 1; i < ROUNDS; i++) {
         for (int j = 0; j < NB_WORDS; j++) {
             index = (13 + 4 * j)%16;
-            s[i][4 * j] = s[i-1][index] ^ sbox[s[i][index-1]];
-        }
-        s[i][12] ^= rcon[i];
-
-        for (int j = 0; j < NB_WORDS; j++) {
+            s[i][4 * j] = s[i-1][index] ^ sbox[s[i-1][index-1]];
             index = (14 + 4 * j)%16;
             s[i][4 * j + 1] = s[i-1][index];
             index = (15 + 4 * j)%16;
@@ -66,6 +62,7 @@ void calc_schedule() {
             index = (12 + 4 * j)%16;
             s[i][4 * j + 3] = s[i-1][index];
         }
+        s[i][12] ^= rcon[i];
     }
 }
 
