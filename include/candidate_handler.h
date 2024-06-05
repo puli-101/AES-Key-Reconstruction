@@ -12,7 +12,7 @@
 typedef struct {
     uint8_t sub_key[BLOCK_SIZE];
     int block_nb;
-    double prob;
+    double score;
 } candidate;
 
 extern candidate cand_lst[NB_BLOCKS][CANDIDATES];

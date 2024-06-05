@@ -41,6 +41,12 @@ static inline double randf() {
     return (double)rand()/(double)(RAND_MAX);
 }
 
+static inline double abs_double(double x) {
+    if (x < 0)
+        return -x;
+    return x;
+}
+
 //extracts all bytes of a text and stores it in a buffer
 //returns the size of the textfile
 int extract_text(char*, char*);

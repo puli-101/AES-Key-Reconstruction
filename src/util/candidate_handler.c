@@ -11,7 +11,7 @@ void print_candidate_block(int block) {
         set_color(stdout,"default");
         for (int k = 0; k < 4; k++) 
             printf("%02x ", cand_lst[block][j].sub_key[k]);
-        printf("\n%.3f %% likelihood\n\n", 100 * cand_lst[block][j].prob);
+        printf("\n%.3f %% likelihood\n\n", 100 * cand_lst[block][j].score);
     }
 }
 
@@ -23,18 +23,18 @@ void print_candidates() {
 
 void update_candidates(candidate* cand) {
     int block = cand->block_nb;
-    double min_prob = 1;
+    double max_score = 5;
     candidate* to_replace = NULL;
     //search min
     for (int i = 0; i < CANDIDATES; i++) {
-        if (cand_lst[block][i].prob < min_prob) {
-            min_prob = cand_lst[block][i].prob;
+        if (cand_lst[block][i].score > max_score) {
+            max_score = cand_lst[block][i].score;
             to_replace = &cand_lst[block][i];
         }
     }
     //replacement
-    if (to_replace != NULL && min_prob < cand->prob) {
-        to_replace->prob = cand->prob;
+    if (to_replace != NULL && max_score > cand->score) {
+        to_replace->score = cand->score;
         for (int i = 0; i < BLOCK_SIZE; i++)
             to_replace->sub_key[i] = cand->sub_key[i];
     }

@@ -88,6 +88,7 @@ int main(int argc, char** argv) {
     if (VERBOSE) {
         print_color(stdout, "\nLoss percentage :", "yellow", ' ');
         printf("%.3f %%\n", (float)(100 * losses) / (float)actual_size);
+        //printf("losses : %d schedule bit size : %d\n",losses, actual_size);
     }
     
     return EXIT_SUCCESS;
