@@ -2,7 +2,7 @@
 
 This folder contains alternative representations of AES-128 key schedules as stated by Leurent and Pernot. These key schedules untangle the dependencies of each bit into 4 independent blocks of 4-byte words which facilitates the error correction. For further information see 
 
-Leurent, G., & Pernot, C. (2021, June). New representations of the AES key schedule. In Annual International Conference on the Theory and Applications of Cryptographic Techniques (pp. 54-84). Cham: Springer International Publishing.
+Leurent, G., & Pernot, C. (2021, June). New representations of the AES key schedule. In Annual International Conference on the Theory and Applications of Cryptographic Techniques (pp. 54-84). Cham: Springer International Publishing. https://eprint.iacr.org/2020/1253.pdf
 
 ## Files
 
