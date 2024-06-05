@@ -32,8 +32,10 @@ void usage(char* name) {
     fprintf(stderr,"For file formatting details, execute first ./bin/noise <src_file> <probability> <channel_type> [options] ");
     fprintf(stderr, "or see ./samples/sched1_bsc.txt\n");
     print_color(stderr, "Options :","yellow",'\n');
-    fprintf(stderr,"- \033[0;36mverbose\033[0m : v=true | v=false (true by default)\n");
-    fprintf(stderr,"- \033[0;36mshortened list of candidate key schedules\033[0m : s=true | s=false (false by default)\n");
+    fprintf(stderr,"- \033[0;36mverbose\033[0m : -v=true | -v=false (true by default)\n");
+    fprintf(stderr,"- \033[0;36mshortened list of candidate key schedules\033[0m : -s=true | -s=false (false by default)\n");
+    fprintf(stderr,"- \033[0;36mrandomized search\033[0m : -r=true | -r=false (false by default)\n");
+    fprintf(stderr,"- \033[0;36mlimit maximum number of iterations\033[0m : -l=<n> where <n> is a natural number representing the maximum number of itereations\n");
     exit(EXIT_FAILURE);
 }
 
