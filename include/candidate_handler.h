@@ -20,4 +20,10 @@ void print_candidate_block(int block);
 void update_candidates(candidate*);
 void print_candidates();
 void init_candidates();
+
+//copies candidate src to dest
+void cpy_candidate(candidate* src, candidate* dest);
+
+//just a bubble sort (we dont use this function often so it's ok)
+void sort_candidates(int block);
 #endif

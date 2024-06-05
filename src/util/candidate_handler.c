@@ -2,10 +2,34 @@
 
 candidate cand_lst[NB_BLOCKS][CANDIDATES];
 
+//copies candidate src to dest
+void cpy_candidate(candidate* src, candidate* dest) {
+    dest->block_nb = src->block_nb;
+    dest->score = src->score;
+    for (int i = 0; i < BLOCK_SIZE; i++)
+        dest->sub_key[i] = src->sub_key[i];
+} 
+
+//just a bubble sort (we dont use this function often so it's ok)
+void sort_candidates(int block) {
+    candidate temp; 
+    for (int i = 0; i < CANDIDATES; i++) {
+        for (int j = 0; j < CANDIDATES - 1; j++) {
+            if (cand_lst[block][j].score > cand_lst[block][j+1].score) {
+                cpy_candidate(&cand_lst[block][j+1], &temp);
+                cpy_candidate(&cand_lst[block][j], &cand_lst[block][j+1]);
+                cpy_candidate(&temp, &cand_lst[block][j]);
+            }
+        }
+    }
+}
+
 void print_candidate_block(int block) {
+    int limit = SHORTENED ? 3 : CANDIDATES;
+    sort_candidates(block);
     set_color(stdout,"yellow");
     printf("Possible candidates for block %d:\n",block);
-    for (int j = 0; j < CANDIDATES; j++) {
+    for (int j = 0; j < limit; j++) {
         set_color(stdout,"cyan");
         printf("- Candidate %d : ", j);
         set_color(stdout,"default");

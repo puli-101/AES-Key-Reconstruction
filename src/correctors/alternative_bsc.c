@@ -88,9 +88,6 @@ int main(int argc, char** argv) {
     init_candidates();
     correct();
 
-    //print_color(stdout,"\nRecap","yellow",'\n');
-    //print_candidates();
-
     return EXIT_SUCCESS;
 }
 
@@ -126,8 +123,8 @@ void parse_input(char* raw, int size) {
 void correct() {
     candidate* cand = (candidate*)malloc(sizeof(candidate));
     double prcntg;
-    uint32_t nb_iter = 500000 * CANDIDATES;
-    int threshold = ((double)nb_iter * 0.00625);
+    uint32_t nb_iter = UINT32_MAX;
+    int threshold = ((double)nb_iter * 0.0125);
     //check(cand);
     for (int i = 0; i < NB_BLOCKS; i++) {
         if (VERBOSE) {
@@ -141,7 +138,7 @@ void correct() {
         for (uint32_t j = 0; j < nb_iter; j++) { 
             if (VERBOSE && (j % threshold == 0)) {
                 print_progress(prcntg);
-                prcntg += 0.00625;
+                prcntg += 0.0125;
             }
 
             for (int k = 0; k < BLOCK_SIZE; k++)
@@ -149,10 +146,13 @@ void correct() {
             
             calc_candidate_likelihood(cand);
             update_candidates(cand);
+            //if (cand->score < 1.5)
+            //    break;
         }
         
 
         print_progress(1);
+        printf("\n");
         print_candidate_block(i);
     }
     free(cand);
@@ -168,10 +168,6 @@ void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
             subschedule[i][0] ^= rcon[i];
         }
         index = (index + 1) % 4;
-        /*printf("%d :",i);
-        for (int j = 0; j < BLOCK_SIZE; j++)
-            printf("%02x ", subschedule[i][j]);
-        printf("\n");*/
     }
     
 }
@@ -193,15 +189,6 @@ int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int offset) {
                     delta++;
             }
         }
-        /*printf("%d differences in the %dth round ", delta, i);
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            printf("%02x", subschedule[i][j]);
-        }
-        printf(" ");
-        for (int j = 0; j < BLOCK_SIZE; j++) {
-            printf("%02x", grid[i][j+(4*(offset+i))%NB_BYTES]);
-        }
-        printf("\n");*/
         diff += delta;
     }
     return diff;
@@ -210,11 +197,11 @@ int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int offset) {
 void calc_candidate_likelihood(candidate* cand) {
     uint8_t subschedule[ROUNDS][BLOCK_SIZE];
     int diff;
-    for (int i = 0; i < BLOCK_SIZE; i++)
+    for (int i = 0; i < BLOCK_SIZE; i++) {
         subschedule[0][i] = cand->sub_key[i];
+    }
     calc_subschedule(subschedule, cand->block_nb);
     diff = calc_diff(subschedule, cand->block_nb);
-    //change 8 for something else
     cand->score = z_score(diff);
 }
 
@@ -225,11 +212,6 @@ void test() {
     subschedule[0][1] = 0x00;
     subschedule[0][2] = 0x00;
     subschedule[0][3] = 0x88;
-    /*
-    printf("0 :");
-    for (int i = 0; i < BLOCK_SIZE; i++)
-        printf("%02x ",subschedule[0][i]);
-    printf("\n");*/
     calc_subschedule(subschedule,0);
     int diff = calc_diff(subschedule,0);
     printf("Diff : %d \n",diff);
