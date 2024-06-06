@@ -10,7 +10,7 @@
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 
 uint8_t grid[ROUNDS][NB_BYTES];       //representation ascii d'un key schedule
-double proba0, proba1;
+double proba;
 double std_deviation;
 double expected_value;
 
@@ -25,10 +25,10 @@ double z_score(int diff) {
 }
 
 void usage(char* name) {
-    print_header(name,"<filename> <delta0> <delta1> [options]");
+    print_header(name,"<filename> <delta0> [options]");
     fprintf(stderr,"Where\n - \033[0;36m<filename>\033[0m contains a corrupted AES key schedule that went through a binary noisy channel\n");
     fprintf(stderr,"- \033[0;36m<delta0>\033[0m represents the probability of a bit set to 0 to becoma a 1\n");
-    fprintf(stderr,"- \033[0;36m<delta1>\033[0m represents the probability of a bit set to 1 to decay to 0\n");
+    //fprintf(stderr,"- \033[0;36m<delta1>\033[0m represents the probability of a bit set to 1 to decay to 0\n");
     fprintf(stderr,"For file formatting details, execute first ./bin/noise <src_file> <probability> <channel_type> [options] ");
     fprintf(stderr, "or see ./samples/sched1_bsc.txt\n");
     print_color(stderr, "Options :","yellow",'\n');
@@ -46,11 +46,11 @@ void correct();
 void test();
 
 int main(int argc, char** argv) {
-    if (argc < 4) {
+    if (argc < 3) {
         usage(argv[0]);
     }
 
-    for (int i = 4; i < argc; i++) {
+    for (int i = 3; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
         if (!strcmp(argv[i],"-s=true"))
@@ -62,20 +62,13 @@ int main(int argc, char** argv) {
     int size = extract_text(file,raw);
 
     //Probability of decay from 0 to 1
-    proba0 = strtod( argv[2], &endPtr); 
+    proba = strtod( argv[2], &endPtr); 
     if (endPtr == argv[2]) {
         print_color(stderr,"Format error : cannot cast third argument into double","red",'\n');
         usage(argv[0]);
     } 
-    std_deviation = sqrt(SUB_SCHED_SIZE * proba0 * (1-proba0));
-    expected_value = SUB_SCHED_SIZE * proba0;
-    
-    //Probability of decay from 1 to 0
-    proba1 = strtod( argv[3], &endPtr); 
-    if (endPtr == argv[3]) {
-        print_color(stderr,"Format error : cannot cast fourth argument into double","red",'\n');
-        usage(argv[0]);
-    }  
+    std_deviation = sqrt(SUB_SCHED_SIZE * proba * (1-proba));
+    expected_value = SUB_SCHED_SIZE * proba;
 
     parse_input(raw, size);
     
