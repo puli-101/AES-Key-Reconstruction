@@ -11,11 +11,12 @@ using namespace std;
 #define BLOCK_SIZE 4
 #define NB_BLOCKS 4
 #define MAX_SIZE 8192
-#define SUB_SCHED_SIZE 352 //size of a subschedule in bits
+#define SCALE 1
+#define SUB_SCHED_SIZE (int)(BLOCK_SIZE * ROUNDS * 8 * SCALE) //size of a subschedule in bits
 //Naive key reconstruction algorithm for AES-128 keys that went through the binary noisy channels
 //sample execution : ./bin/correct_alt alternative/sched1_bsc_0625 0.0625 0.0625 -v=false
 int CURRENT_BLOCK;
-int VERBOSE;
+int VERBOSE = 1;
 
 #define NB_BYTES 16
 #define ROUNDS 11
@@ -148,11 +149,12 @@ void correct();
 void test();
 
 int main(int argc, char** argv) {
-    if (argc < 4) {
-        cout<<"ERROR"<<endl;
+    if (argc < 3) {
+        cout<<"Usage : "<<argv[0]<<" <filename> <decay_probability> [-v=false]"<<endl;
+        exit(-1);
     }
 
-    for (int i = 4; i < argc; i++) {
+    for (int i = 3; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
     }
@@ -168,9 +170,6 @@ int main(int argc, char** argv) {
     } 
     std_deviation = sqrt(SUB_SCHED_SIZE * proba * (1-proba));
     expected_value = SUB_SCHED_SIZE * proba;
-
-    //Current block to be analyzed
-    CURRENT_BLOCK = stoi(argv[3]);
 
     parse_input(raw, size);
     
@@ -242,7 +241,7 @@ void correct() {
         
         for (int j = 0; j < 4; j++) {
             firstVector[j] = grid[0][j + 4 * CURRENT_BLOCK];
-            cout<<hex<<unsigned(firstVector[j])<<dec<<' ';
+            //cout<<hex<<unsigned(firstVector[j])<<dec<<' ';
         }
 
         bool found = false;
@@ -255,7 +254,7 @@ void correct() {
 
         int threshold = ((double)UINT32_MAX * 0.0125);
 
-        cout<<endl<<"First subKey to be analyzed: "<<hex<<first.getSubKey()<<dec<<endl;
+        //cout<<endl<<"First subKey to be analyzed: "<<hex<<first.getSubKey()<<dec<<endl;
         while(!q.empty()) {
             if ((count % threshold == 0)) {
                 print_progress(prcntg);
@@ -269,11 +268,13 @@ void correct() {
             cout<<"Score "<<c.getScore()<<endl;
             cout<<"Position "<<c.getCurrentPosition()<<endl<<endl;
             */
-            if (c.getScore() < 1.5) {
+            if (c.getScore() < (1.5 * SCALE)) {
                 found = true;
                 print_progress(1);
-                cout<<endl<<"Found after "<<count<<" iterations !\n";
-                cout<<hex<<c.getSubKey()<<endl;
+                cout<<endl<<endl<<"Found after "<<count<<" iterations !\n->";
+                for (int i = 0 ; i < 4; i++)
+                    printf("%02x ",get_byte_from_word(c.getSubKey(),i));
+                cout<<"\nWith a score of "<<c.getScore()<<endl<<endl;
                 break;
             }
             if (c.finishedExploring())
@@ -317,7 +318,7 @@ int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int offset) {
     int diff = 0, delta = 0;
     uint8_t byte_diff;
 
-    for (int i = 0; i < ROUNDS; i++) {
+    for (int i = 0; i < ((int)((float)ROUNDS * SCALE)); i++) {
         delta = 0;
         for (int j = 0; j < BLOCK_SIZE; j++) {
             byte_diff = subschedule[i][j] ^ grid[i][(j + 4*(offset+i))%NB_BYTES];

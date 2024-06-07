@@ -141,8 +141,8 @@ void correct() {
             
             calc_candidate_likelihood(cand);
             update_candidates(cand);
-            //if (cand->score < 1.5)
-            //    break;
+            if (cand->score < 1.5)
+                break;
         }
         
 
