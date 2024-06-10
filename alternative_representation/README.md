@@ -4,7 +4,7 @@
 
 keygen.c generates a key schedule as specified in pages 7 and 8 of bibliography. Graphically it corresponds to the following image:
 
-![See page 10 of bibliography](/img/graphic.png?raw=true "One round of the AES-128 key schedule (Leurent & Pernot, 2021)")
+![See page 10 of bibliography](./img/graphic.png?raw=true "One round of the AES-128 key schedule (Leurent & Pernot, 2021)")
 
 ## Error correcting algorithms
 
