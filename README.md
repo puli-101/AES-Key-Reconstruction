@@ -1,81 +1,19 @@
 # AES Key Reconstruction
 
-This repository includes an AES key schedule generator from a given key as well as a random schedule generator. Additionally, it includes an erasure and bit flipping functionnality that emulates the key schedule passing through a noisy channel. Finally, it includes an error correcting algorithm for the binary erasure, binary symmetric, and Z-channels. 
+## Overview
 
-## Compilation
+This repository contains generators, modifiers, and reconstructor for two different representations of an AES key schedule. 
 
-It suffices to execute 'make'. The binary files will be located at ./bin
+- The first folder named 'classical_representation' contains the above mention functionalities for a standard AES key schedule. In particular, the possibility to expand a 128-bit key or generate a random AES-128 key schedule, simulate the passing of a key schedule through a binary channel, and correct a schedule that went through one of these channels. For further details see 'classic_representation/README.md'
 
-## Execution
-
-### 1. Key Schedule Generator
-To generate an AES key schedule, execute 
-
-    ./bin/keygen [KEY] [OPTIONS]
-
-Where KEY represents an AES-128/192/256 key in hexadecimal and OPTIONS include (for now) -v=false to disable verbose
-
-If no input is given, then a random AES-128 key schedule is generated.
-
-### 2. Noisy Channels
-To modify a schedule, execute
-
-    ./bin/keymod <file> <probability> <channel_t> [options]
-
-Where 
-
-- 'file' contains an AES key schedule as formatted as ./bin/keygen 's output (see './samples/aes-128-schedule.txt' for an example)
-- 'probability' indicates how likely each bit is to flip/be erased
-- 'channel_t' indicates the type of noisy channel the key schedule goes through. Accepted types include 'bin-sym' for binary symmetric, 'bin-erasure' for binary erasure, and 'z-channel'
-- options include -v=false to disable verbose
-
-### 3. Error Correction
-
-#### 3.1 Binary Erasure Channel
-
-To correct a key schedule that lost bits through the binary erasure channel, execute
-
-    ./bin/correct_bec <file> [options]
-
-Where filename contains an AES key schedule that went through the binary erasure channel. For an example of formatting see './samples/aes-128-bin_erasure.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 bin-erasure -v=false'). The key schedule is represented as a grid of binary strings. Missing bits are represented with an 'X'.
-
-The solution presented in src/correct_bec.c correspond to a naive key reconstruction algorithm. It is able to correct a key schedule that has up to 40% erasures for AES-128 in a reasonable amount of time. To exploit the linearity of AES a more advanced version would stop once we have a single round key (for AES-128) or two consecutive round keys for AES-256.
-
-<!--
-#### 3.2 Z-Channel
-
-To correct a key schedule whose bits have flipped as follows:
-
-<p align="center">
-  <img alt="Wikimedia Diagram Showing Z-Channel" src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Z-channel.svg" />
-</p>
-
-Execute:
-
-    ./bin/correct_z <file> <probability> [options]
-
-Where filename contains an AES key schedule that went through the Z noisy channel. For an example of formatting see './samples/aes-128-z_channel.txt' (it corresponds to the output of './bin/keymod ./samples/aes-128-schedule.txt 0.125 z-channel -v=false'). The key schedule is represented as a grid of 32-bit-long hexadecimal values.
--->
-
-## Things missing
-
-### General Corrections
-
-- Correct key extraction (errors during keymod)
-
-### KeyGen
-
-- Add an option to randomly generate 192 and 256 key schedules
-
-### Binary Erasure Channel
-
-- In the core resolution cycle we can add a 4th case that includes the analysis of the first column
-- We can immediatly determine the AES key given a round key for AES-128 and two round keys for AES-256
-- Correct AES-256 key schedule (each round should contain 128 bit blocks)
-- Once we know 4 consecutive words of an AES-128 key schedule we can derive all other subkeys
+- The second folder named 'alternative_representation' contains the same functionalities presented but for an alternative AES schedule. This new schedule is comprised of four linearly independent blocks of four bytes per round. For further details see 'alternative_representation/README.md' or the article below. 
 
 ## Credits
 
-The inspiration of these error correcting algorithms comes from the following article : 
+The alternative key schedule was inspired by the following article:
 
-J. Alex Halderman, Seth D. Schoen, Nadia Heninger, William Clarkson, William Paul, Joseph A. Calandrino, Ariel J. Feldman, Jacob Appelbaum, and Edward W. Felten. 2009. Lest we remember: cold-boot attacks on encryption keys. Commun. ACM 52, 5 (May 2009), 91–98. https://doi.org/10.1145/1506409.1506429
+- Veyrat-Charvillon, N., Gérard, B., Renauld, M., & Standaert, F. X. (2013). An optimal key enumeration algorithm and its application to side-channel attacks. In Selected Areas in Cryptography: 19th International Conference, SAC 2012, Windsor, ON, Canada, August 15-16, 2012, Revised Selected Papers 19 (pp. 390-406). Springer Berlin Heidelberg. https://eprint.iacr.org/2011/610 
+
+##
+
+This repository was developed during an internship at the ALMASTY team at Sorbonne Université - LIP6 (Computer Science Laboratory of Paris 6)
