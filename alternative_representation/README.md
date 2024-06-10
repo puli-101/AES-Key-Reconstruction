@@ -4,7 +4,12 @@
 
 keygen.c generates a key schedule as specified in pages 7 and 8 of bibliography. Graphically it corresponds to the following image:
 
-![See page 10 of bibliography](./img/graphic.png?raw=true "One round of the AES-128 key schedule (Leurent & Pernot, 2021)")
+<p align="center">
+  <img alt="See page 10 of bibliography" src="./img/graphic.png?raw=true" />
+  One round of the AES-128 key schedule (Leurent & Pernot, 2021)
+</p>
+
+$k_i$ corresponds to the $i$-th byte of the orignial key. On the other hand, $k'_i$ corresponds to the $i$-th byte after the transformations shown in page 7 of the bibliography.
 
 ## Error correcting algorithms
 
