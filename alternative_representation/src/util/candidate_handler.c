@@ -10,7 +10,7 @@ void cpy_candidate(candidate* src, candidate* dest) {
         dest->sub_key[i] = src->sub_key[i];
 } 
 
-//just a bubble sort (we dont use this function often so it's ok)
+//just a bubble sort (we just use this function once so it's ok)
 void sort_candidates(int block) {
     candidate temp; 
     for (int i = 0; i < CANDIDATES; i++) {
@@ -24,6 +24,7 @@ void sort_candidates(int block) {
     }
 }
 
+//prints a set of plausible candidates from one of the 4 32-bit blocks
 void print_candidate_block(int block) {
     int limit = SHORTENED ? 3 : CANDIDATES;
     sort_candidates(block);
@@ -39,12 +40,16 @@ void print_candidate_block(int block) {
     }
 }
 
+//prints all 4 blocks of plausible candidates
 void print_candidates() {
     for (int i = 0; i < NB_BLOCKS; i++) {
         print_candidate_block(i);
     }
 }
 
+//given a new candidate (and its Z-score)
+//determines if it is better suited than one
+//of the currently stored candidates
 void update_candidates(candidate* cand) {
     int block = cand->block_nb;
     double max_score = 0;
@@ -64,10 +69,24 @@ void update_candidates(candidate* cand) {
     }
 }
 
+//sets an initial score to all candidates for all blocks
 void init_candidates() {
     for (int i = 0; i < NB_BLOCKS; i++) {
         for (int j = 0; j < CANDIDATES; j++) {
             cand_lst[i][j].score = 100;
         }
     }
+}
+
+//Calculates hamming distance of candidate to the extracted solution
+//and determines the candidates likelihood through the Z score
+void calc_candidate_likelihood(candidate* cand,uint8_t grid[ROUNDS][NB_BYTES] , double expected_value, double std_deviation) {
+    uint8_t subschedule[ROUNDS][BLOCK_SIZE];
+    int diff;
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        subschedule[0][i] = cand->sub_key[i];
+    }
+    calc_subschedule(subschedule, cand->block_nb);
+    diff = calc_diff(subschedule, grid, cand->block_nb);
+    cand->score = z_score(diff,expected_value, std_deviation);
 }

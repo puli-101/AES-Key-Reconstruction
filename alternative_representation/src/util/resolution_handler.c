@@ -22,6 +22,9 @@ int calc_diff(uint8_t subschedule[ROUNDS][BLOCK_SIZE], uint8_t grid[ROUNDS][NB_B
     return diff;
 }
 
+//Given an index of one of the 4 blocks that make up the key schedule
+//and a subschedule that has just the first sub round key filled out
+//we calculate the rest of the sub round keys of the corresponding slice
 void calc_subschedule(uint8_t subschedule[ROUNDS][BLOCK_SIZE], int index) {
     for (int i = 1; i < ROUNDS; i++) {
         subschedule[i][0] = subschedule[i-1][1] ^ sbox[subschedule[i-1][0]];

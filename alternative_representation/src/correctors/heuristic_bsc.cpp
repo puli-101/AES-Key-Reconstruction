@@ -11,10 +11,6 @@ using namespace std;
 
 int CURRENT_BLOCK;
 
-#define NB_BYTES 16
-#define ROUNDS 11
-#define NB_WORDS 4
-
 uint8_t grid[ROUNDS][NB_BYTES];      
 double proba;
 double std_deviation;
@@ -22,11 +18,12 @@ double expected_value;
 
 void correct();
 
+//Representation of a subKey candidate
 class Candidate {
 private:
-    uint32_t subKey;
-    double score;
-    int currentPosition; 
+    uint32_t subKey;        //all 32 bits of the candidate subkey
+    double score;           //z score of candidate
+    int currentPosition;    //from 0 to 32
 public:
     double getScore() {return score;}
     void setScore(double score) {this->score = score;}
@@ -45,14 +42,13 @@ public:
     }
 };
 
+//Class used to sort candidates
 class CompareCandidates {
 public:
     bool operator() (Candidate a, Candidate b) {
         return a.getScore() > b.getScore();
     }
 };
-
-void parse_input(char*, int);
 
 void correct();
 
@@ -62,16 +58,18 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
+    //Option handling
     for (int i = 3; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
     }
 
+    //Extraction of noisy key schedule
     char raw[MAX_SIZE];
     char *file = argv[1], *endPtr;
     int size = extract_text(file,raw);
 
-    //Probability of decay from 0 to 1
+    //Extraction of probability of decay of the channel
     proba = strtod( argv[2], &endPtr); 
     if (endPtr == argv[2]) {
         cout<<"Format error : cannot cast third argument into double"<<endl;
@@ -79,9 +77,8 @@ int main(int argc, char** argv) {
     std_deviation = sqrt(SUB_SCHED_SIZE * proba * (1-proba));
     expected_value = SUB_SCHED_SIZE * proba;
 
-    parse_input(raw, size);
-    
-    //confirmation
+    //Parsing and parsing confirmation confirmation
+    parse_input(raw, size, grid);
     cout<<"Parsed input :\n";
     print_new_schedule(grid);
     cout<<"\nBruteforcing kschedule...\n";
@@ -91,58 +88,30 @@ int main(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-void parse_input(char* raw, int size) {
-    char hex[3], *end;
-    int x = 0, y = 0;
-
-    for (int i = 0; i < size - 1; i++) {
-        if (raw[i] == '\n' || raw[i] == ' ') continue;
-        if (raw[i] == '\0' || raw[i] == EOF) break;
-        hex[0] = raw[i];
-        hex[1] = raw[i+1];
-        hex[2] = '\0';
-        grid[x][y] = strtol(hex, &end, 16); 
-        if (end == hex) {
-            cout<<"ERROR"<<endl;
-        }
-        y++;
-        if (y >= NB_BYTES) {
-            y = 0;
-            x++;
-
-            if (x > ROUNDS) {
-                cout<<"ERROR"<<endl;
-            }
-        } 
-        i++;
-    }
-}
-
 void correct() {
+    //We correct each of the 4 32-bit blocks making up the key
     for (int i = 0; i < 4; i++) {
         cout<<"Solving block "<<i<<endl;
         CURRENT_BLOCK = i;
-        priority_queue<Candidate, vector<Candidate>, CompareCandidates> q;
-        Candidate first;
-        u_int32_t count = 0;
-        u_int8_t firstVector[4];
+        priority_queue<Candidate, vector<Candidate>, CompareCandidates> q;  //keps track of the closest candidate to an actual solution
+        Candidate first;            //first tested candidate
+        u_int8_t firstVector[4];    //first vector = extracted noisy subkey that corresponds to the i-th block 
         
-        for (int j = 0; j < 4; j++) {
+        for (int j = 0; j < NB_BLOCKS; j++) {
             firstVector[j] = grid[0][j + 4 * CURRENT_BLOCK];
-            //cout<<hex<<unsigned(firstVector[j])<<dec<<' ';
         }
 
-        bool found = false;
-        double prcntg = 0.0;
-
+        //initialization of all fields of first tested subkey
         first.setCurrentPosition(-1);
         first.setSubKey(byteArrayInto32_t(firstVector));
         first.calcScore();
         q.push(first);
 
-        int threshold = ((double)UINT32_MAX * 0.0125);
+        int threshold = ((double)UINT32_MAX * 0.0125);  //threshold for updating progress bar on screen
+        bool found = false;         //determines if an ideal candidate has been found
+        double prcntg = 0.0;        //keeps track of percentage of tested candidates
+        u_int32_t count = 0;        //keeps track of number of tested candidates  
 
-        //cout<<endl<<"First subKey to be analyzed: "<<hex<<first.getSubKey()<<dec<<endl;
         while(!q.empty()) {
             if ((count % threshold == 0)) {
                 print_progress(prcntg);
@@ -151,16 +120,13 @@ void correct() {
             Candidate c = q.top();
             q.pop();
 
-            /*cout<<"Candidate "<<count<<endl;
-            cout<<"Key "<<hex<<c.getSubKey()<<dec<<endl;
-            cout<<"Score "<<c.getScore()<<endl;
-            cout<<"Position "<<c.getCurrentPosition()<<endl<<endl;
-            */
+            //If the candidate's score is close enough to the expected number of errors
+            //then we print it on screen
             if (c.getScore() < (1.5 * SCALE)) {
                 found = true;
                 print_progress(1);
                 cout<<endl<<endl<<"Found after "<<count<<" iterations !\n->";
-                for (int i = 0 ; i < 4; i++)
+                for (int i = NB_BLOCKS - 1 ; i > -1; i--)
                     printf("%02x ",get_byte_from_word(c.getSubKey(),i));
                 cout<<"\nWith a score of "<<c.getScore()<<endl<<endl;
                 break;
@@ -168,6 +134,7 @@ void correct() {
             if (c.finishedExploring())
                 continue;
             
+            //Calculates two new candidates
             Candidate sub;
             sub.setCurrentPosition(c.getCurrentPosition() + 1);
             sub.setSubKey(c.getSubKey() ^ (1 << sub.getCurrentPosition()));
