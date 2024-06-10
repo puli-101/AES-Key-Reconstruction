@@ -20,7 +20,7 @@ If no input is given, then a random AES-128 key schedule is generated.
 ### 2. Noisy Channels
 To modify a schedule, execute
 
-    ./bin/keymod <file> <probability> <channel_t> [options]
+    ./bin/noise <file> <probability> <channel_t> [options]
 
 Where 
 
