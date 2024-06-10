@@ -67,7 +67,7 @@ void calc_schedule() {
 }
 
 
-void parse_input(char* skey) {
+void parse_input_key(char* skey) {
     char word[9];
     word[3] = '\0';
     for (int i = 0; i < 32; i+=8) {
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
     
     if (!random) {
         //if a key was given as an input then we extract it
-        parse_input(skey);
+        parse_input_key(skey);
     } else {
         //si on donne pas une clef en entree alors 
         //on genere une clef aleatoire de 128 bits

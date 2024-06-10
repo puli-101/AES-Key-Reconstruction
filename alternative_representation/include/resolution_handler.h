@@ -5,10 +5,9 @@
 #include "aes.h"
 #include "util.h"
 
-#define SCALE 1
-#define BLOCK_SIZE 4
-#define NB_BLOCKS 4
-#define MAX_SIZE 8192
+#define SCALE 1         //scale factor while looking for a solution (1 : we look through all subkeys, 0 we don't look through any, etc..)
+#define BLOCK_SIZE 4    //size in bytes of each on of the four 4-byte-long blocks that define the first round key 
+#define NB_BLOCKS 4     //number of 32-bit blocks that define the first round key
 #define SUB_SCHED_SIZE (int)(BLOCK_SIZE * ROUNDS * 8 * SCALE) //size of a subschedule in bits
 
 //Calculates the hamming distance between a subschedule 

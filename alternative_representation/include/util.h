@@ -9,7 +9,8 @@
 #include <limits.h>
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
+#define PBWIDTH 60      //used to print progress bar above
+#define MAX_SIZE 8192   //max size of an input file
 
 //Various functions used by almost all sourcefiles
 

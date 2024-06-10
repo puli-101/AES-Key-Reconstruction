@@ -1,10 +1,6 @@
 # Error correcting algorithms
 
-## erasures.c
-
-Error correcting algorithm for the binary erasure channel of a classical AES-128 key schedule. Begins by resolving all bits that can be deduced by the initial noisy key and then propagates. If it gets stuck, it begins a recursive exponential ennumeration. 
-
-## alternative_bsc.c
+## bruteforce_bsc.c
 
 Bruteforces all possible values of the initial row of an alternative key schedule as presented in the following article (see pages 7 and 8)
 
