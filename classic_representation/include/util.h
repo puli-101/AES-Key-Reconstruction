@@ -10,7 +10,7 @@
 #include <limits.h>
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60
+#define PBWIDTH 60  //used to print progress bar above
 
 //Various functions used throughout all sourcefiles
 
@@ -28,8 +28,12 @@ void set_color(FILE*, char*);
 void print_color(FILE*, char*, char*,char);
 char* get_color(char* color);
 
+//Function used when execution arguments are wrong
+//Given the name of the executable and the list of arguments
+//prints the format to be used to properly execute file
 void print_header(char*,char*);
 
+//prints a progress bar on screen
 void print_progress(double percentage);
 
 //calculates combinations n choose k
@@ -42,6 +46,9 @@ static inline double randf() {
     return (double)rand()/(double)(RAND_MAX);
 }
 
+//custom definition of absolute value
+//it'd be simpler to just negate the bit that corresponds to 
+//sign in the IEEE 754 representation of double
 static inline double abs_double(double x) {
     if (x < 0)
         return -x;

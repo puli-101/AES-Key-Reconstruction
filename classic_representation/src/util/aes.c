@@ -62,14 +62,3 @@ void print_schedule(uint32_t schedule[15][NB_WORDS], int rounds) {
         printf("\n");
     }
 }
-
-//prints the alternative version of the representation of the key schedule
-void print_new_schedule(uint8_t s[ROUNDS][NB_BYTES]) {
-    for (int i = 0; i < ROUNDS; i++) {
-        for (int j = 0; j < NB_BYTES; j++) {
-            if (j%4 == 0) printf(" ");
-            printf("%02x",s[i][j]);
-        }
-        printf("\n");
-    }
-}

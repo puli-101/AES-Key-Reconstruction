@@ -6,6 +6,8 @@
 #include <string.h>
 
 //DOUBLE LINKED LIST FUNCTIONS
+//(idk why I redid it)
+
 typedef struct t_list {
   struct t_list* next;
   struct t_list* prev;
