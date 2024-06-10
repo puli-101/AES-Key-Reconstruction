@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     parse_input(raw, size, grid);
     cout<<"Parsed input :\n";
     print_new_schedule(grid);
-    cout<<"\nBruteforcing kschedule...\n";
+    cout<<"\n(Presque) Bruteforcing kschedule...\n";
     
     correct();
 
@@ -126,7 +126,7 @@ void correct() {
                 found = true;
                 print_progress(1);
                 cout<<endl<<endl<<"Found after "<<count<<" iterations !\n->";
-                for (int i = NB_BLOCKS - 1 ; i > -1; i--)
+                for (int i = 0 ; i < NB_BLOCKS; i++)
                     printf("%02x ",get_byte_from_word(c.getSubKey(),i));
                 cout<<"\nWith a score of "<<c.getScore()<<endl<<endl;
                 break;
