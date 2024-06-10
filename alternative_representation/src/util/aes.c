@@ -40,7 +40,7 @@ uint8_t rcon[255] = {
 
 uint32_t sub(uint32_t n) {
     //decoupage en octets
-    uint8_t subst[4] = {n, n >> 8, n >> 16, n >> 24};
+    uint8_t subst[4] = {(uint8_t)n, (uint8_t)(n >> 8), (uint8_t)(n >> 16), (uint8_t)(n >> 24)};
     //substitution octet par octer
     for (int i = 0; i < 4; i++)
       subst[i] = sbox[subst[i]];
