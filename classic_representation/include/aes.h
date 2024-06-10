@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "util.h"
 
 #define ROUNDS 11       //Number of rounds in AES-128 key schedule
 #define NB_BYTES 16     //Number of bytes per round

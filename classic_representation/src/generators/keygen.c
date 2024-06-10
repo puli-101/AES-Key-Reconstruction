@@ -14,7 +14,7 @@ static int rounds = 11;
 //Given 'skey' a string representing a k-bit long number in hexadecimal
 //it casts every 8 consecutive characters into a 32-bit word
 //and stores it in 'key'
-void parse_input(char* skey) {
+void parse_input_key(char* skey) {
     char word[9];
     word[8] = '\0';
     for (int i = 0; i < key_size; i+=8) {
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
     if (!random) {
         //if a key was given as an input then we extract it
-        parse_input(skey);
+        parse_input_key(skey);
     } else {
         //si on donne pas une clef en entree alors 
         //on genere une clef aleatoire de 128 bits

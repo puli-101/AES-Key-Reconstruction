@@ -17,7 +17,9 @@ uint8_t get_byte_from_word(uint32_t w, int n) {
     return (uint8_t)(w >> (8 * n));
 }
 
-//print usage header
+//Function used when execution arguments are wrong
+//Given the name of the executable and the list of arguments
+//prints the format to be used to properly execute file
 void print_header(char* bin_name, char* format) {
     print_color(stderr,"Input Formatting Error","red",'\n');
     print_color(stderr, "Usage :","yellow",' ');
@@ -64,6 +66,36 @@ int extract_text(char* file, char* buffer) {
     fread (buffer, sizeof(char), length, f);
     fclose(f);
     return length;
+}
+
+
+//Given the raw contents of a file and its size
+//initializes the extracted key schedule into grid
+void parse_input(char* raw, int size, uint8_t grid[ROUNDS][NB_BYTES]) {
+    char hex[3], *end;
+    int x = 0, y = 0;
+
+    for (int i = 0; i < size - 1; i++) {
+        if (raw[i] == '\n' || raw[i] == ' ') continue;
+        if (raw[i] == '\0' || raw[i] == EOF) break;
+        hex[0] = raw[i];
+        hex[1] = raw[i+1];
+        hex[2] = '\0';
+        grid[x][y] = strtol(hex, &end, 16); 
+        if (end == hex) {
+            fprintf(stderr,"File Format Error\n");
+        }
+        y++;
+        if (y >= NB_BYTES) {
+            y = 0;
+            x++;
+
+            if (x > ROUNDS) {
+                fprintf(stderr,"File Format Error\n");
+            }
+        } 
+        i++;
+    }
 }
 
 //xor of a and b where a and b are characters in {'0','1'}

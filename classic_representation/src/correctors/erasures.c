@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "aes.h"
+#include "list.h"
 #include "util.h"
 #define MAX_SIZE 8192
 
@@ -25,7 +26,7 @@ void usage(char* name) {
     exit(EXIT_FAILURE);
 }
 
-void parse_input(char*, int);
+void parse_erased_input(char*, int);
 
 void correct();
 
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
         rows = 13;
     }
 
-    parse_input(raw, size);
+    parse_erased_input(raw, size);
 
     //Graphic parse confirmation
     if (VERBOSE) {
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
 //Transformation of a text file representing the output of a binary erasure channel (given an aes key schedule as an input)
 //into a 3-dimensional 'grid' array where the first coordinate represents the round number, 
 //the second, the position of a word in a given round and the third the value of the 32-bit word (in binary ascii e.g. "1101")
-void parse_input(char* raw, int size) {
+void parse_erased_input(char* raw, int size) {
     int x,y,z;
 
     x = y = z = 0;

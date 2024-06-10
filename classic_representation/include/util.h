@@ -1,8 +1,7 @@
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef _UTIL_H_
+#define _UTIL_H_
 
 #include "aes.h"
-#include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,9 +9,10 @@
 #include <limits.h>
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-#define PBWIDTH 60  //used to print progress bar above
+#define PBWIDTH 60      //used to print progress bar above
+#define MAX_SIZE 8192   //max size of an input file
 
-//Various functions used throughout all sourcefiles
+//Various functions used by almost all sourcefiles
 
 extern int VERBOSE;
 extern int SHORTENED;
@@ -55,9 +55,23 @@ static inline double abs_double(double x) {
     return x;
 }
 
+//Given an array of 4 bytes, determines the corresponing value
+//of a 32 bit type with all 4 of those bytes
+static inline uint32_t byteArrayInto32_t(uint8_t array[4]) {
+    uint32_t res = 0;
+    for (int i = 0; i < 4; i++) {
+        res |= ((uint32_t)array[i]) << (i * 8);
+    }
+    return res;
+}
+
 //extracts all bytes of a text and stores it in a buffer
 //returns the size of the textfile
 int extract_text(char*, char*);
+
+//Given the raw contents of a file and its size
+//initializes the extracted key schedule into grid
+void parse_input(char* raw, int size, uint8_t grid[ROUNDS][NB_BYTES]);
 
 //xor of a and b where a and b are characters in {'0','1'}
 char ascii_xor(char a, char b);
