@@ -6,6 +6,7 @@ keygen.c generates a key schedule as specified in pages 7 and 8 of bibliography.
 
 <p align="center">
   <img alt="See page 10 of bibliography" src="./img/graphic.png?raw=true" />
+  <br>
   One round of the AES-128 key schedule (Leurent & Pernot, 2021)
 </p>
 
