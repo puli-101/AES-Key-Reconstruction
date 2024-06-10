@@ -47,6 +47,14 @@ static inline double abs_double(double x) {
     return x;
 }
 
+static inline uint32_t byteArrayInto32_t(uint8_t array[4]) {
+    uint32_t res = 0;
+    for (int i = 0; i < 4; i++) {
+        res |= ((uint32_t)array[i]) << (i * 8);
+    }
+    return res;
+}
+
 //extracts all bytes of a text and stores it in a buffer
 //returns the size of the textfile
 int extract_text(char*, char*);
