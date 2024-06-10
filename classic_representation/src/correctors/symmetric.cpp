@@ -8,12 +8,16 @@ using std::string;
 
 void usage(char* name) {
     cout<<"Usage "<<name<<" <filename> <delta_0> <delta_1> [-v=false]"<<endl;
-    cout<<" Where filename contains a noisy AES-128 key schedule"<<endl;
+    cout<<"- Where filename contains a noisy AES-128 key schedule"<<endl;
     cout<<" \tdelta_0 represents the probability of a bit set to 0 to flip to 1"<<endl;
     cout<<" \tdelta_1 represents the probability of a bit set to 1 to flip to 0"<<endl;
+    exit(EXIT_FAILURE);
 }
 
+void set_up(uint8_t grid[ROUNDS][NB_BYTES], uint8_t alternative[ROUNDS][NB_BYTES]);
+
 uint8_t grid[ROUNDS][NB_BYTES];
+uint8_t alternative[ROUNDS][NB_BYTES];
 
 void print_schedule(uint8_t grid[ROUNDS][NB_BYTES]) {
     for (int i = 0; i < ROUNDS; i++) {
@@ -25,7 +29,7 @@ void print_schedule(uint8_t grid[ROUNDS][NB_BYTES]) {
     }
 }
 
-void correct();
+
 
 int main(int argc, char** argv) {
     double delta0, delta1;
@@ -34,7 +38,6 @@ int main(int argc, char** argv) {
     if (argc < 4) {
         usage(argv[0]);
     }
-
 
     //Option handling
     for (int i = 3; i < argc; i++) {
@@ -63,16 +66,36 @@ int main(int argc, char** argv) {
     print_schedule(grid);
     cout<<"\n(Presque) Bruteforcing kschedule...\n";
     
-    correct();
+    set_up(grid, alternative);
 
-    return EXIT_SUCCESS;
 
 
     return EXIT_SUCCESS;
 }
 
-void correct() {
-    
+void set_up(uint8_t grid[ROUNDS][NB_BYTES], uint8_t alternative[ROUNDS][NB_BYTES]) {
+
+    for (int i = 0; i < ROUNDS; i++) {
+        alternative[i][0] = grid[i][15];
+        alternative[i][4] = grid[i][14];
+        alternative[i][8] = grid[i][13];
+        alternative[i][12] = grid[i][12];
+
+        alternative[i][1] = grid[i][14] ^ grid[i][10] ^ grid[i][6] ^ grid[i][2];
+        alternative[i][5] = grid[i][13] ^ grid[i][9] ^ grid[i][5] ^ grid[i][1];
+        alternative[i][9] = grid[i][12] ^ grid[i][8] ^ grid[i][4] ^ grid[i][0];
+        alternative[i][13] = grid[i][15] ^ grid[i][11] ^ grid[i][7] ^ grid[i][3];
+
+        alternative[i][2] = grid[i][13] ^ grid[i][5];
+        alternative[i][6] = grid[i][12] ^ grid[i][4];
+        alternative[i][10] = grid[i][15] ^ grid[i][7];
+        alternative[i][14] = grid[i][14] ^ grid[i][6];
+
+        alternative[i][3] = grid[i][12] ^ grid[i][8];
+        alternative[i][7] = grid[i][15] ^ grid[i][11];
+        alternative[i][11] = grid[i][14] ^ grid[i][10];
+        alternative[i][15] = grid[i][13] ^ grid[i][9];
+    }
 }
 
 /*
@@ -86,8 +109,8 @@ void correct() {
 
  Nous considérons les candidats par ordre de probabilité 
  totale décroissante tel que calculé ci-dessus. Pour chaque
- clé candidate que nous considérons, nous calculons le programme de 
- clé étendu et demandons si la probabilité que ce programme de clé étendu 
+ clé candidate que nous considérons, nous calculons le keyschedule
+ étendu et demandons si la probabilité que ce programme de clé étendu 
  se décompose en notre programme de clé récupéré est suffisamment élevée. 
  Si tel est le cas, nous affichons la clé correspondante à titre de supposition. 
  Lorsque l’un des δ0 ou δ1 est très petit, cet algorithme produira 
