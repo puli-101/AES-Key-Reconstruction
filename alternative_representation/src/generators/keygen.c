@@ -70,7 +70,7 @@ void calc_schedule() {
 void parse_input_key(char* skey) {
     char word[9];
     word[3] = '\0';
-    for (int i = 0; i < 32; i+=8) {
+    for (int i = 0; i < 32; i+=2) {
         for (int j = 0; j < 2; j++)
             word[j] = skey[i + j];
         key[i/2] = (int)strtol(word, NULL, 16);
