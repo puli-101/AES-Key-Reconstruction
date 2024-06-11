@@ -66,17 +66,19 @@ if __name__ == "__main__":
         autoremove = True
         sched_size = 128 * 11
         fixed_probability = 0.0625
+        graph = False
 
         if argc > 1:
             for i in range(1, argc):
                 option = sys.argv[i]
                 if (option == "-h" or option == "-help" or option == "--help"):
-                    print("Usage : "+sys.argv[0]+" [-n=<integer> | -o=<integer> | -p=<float> | -v=<bool> | -r=<bool>]")
+                    print("Usage : "+sys.argv[0]+" [-n=<integer> | -o=<integer> | -p=<float> | -v=<bool> | -r=<bool> | -g=true]")
                     print("Where\t-n indicates the maximum number of tests ("+str(nb_tests)+" by default)")
                     print("\t-o indicates the offset of the tests (e.g. if -o=3 then we start counting from 3 which is the default value)")
                     print("\t-p indicates the maximum error probability considered while generating the tests (default 0.125)")
                     print("\t-v indicates if the partial results/statistics are to be shown (default is "+str(verbose)+")")
-                    print("\t-r indicates if test files are to be autoremoved (default is true) \n")
+                    print("\t-r indicates if test files are to be autoremoved (default is true)")
+                    print("\t-g indicates whether a graph will be shown at the end (default : "+str(graph).lower()+")")
                     print("Warning : this code has to be run from the folder alternative_representation")
                     sys.exit()
                 elif option.startswith("-n"):
@@ -89,6 +91,8 @@ if __name__ == "__main__":
                     verbose = False
                 elif option.lower() == "-r=false":
                     autoremove = False
+                elif option.lower() == "-g=true":
+                    graph = True
         
         f = open("misc/statistics.csv", "a+")
         if os.stat("misc/statistics.csv").st_size == 0:
@@ -98,6 +102,8 @@ if __name__ == "__main__":
 
         decay_OG_lst = []
         decay_ALT_lst = []
+        iterations_lst = []
+
         for i in range(nb_tests):
             f = open("misc/statistics.csv", "a+")
             probability = fixed_probability #random.uniform(interval[0], interval[1])
@@ -130,6 +136,7 @@ if __name__ == "__main__":
             #check if wrong reconstruction
             isValid = check(keys, sched) #execute ./bin/alt_to_classic [key] -v=false and compare with first line of file sched
 
+            #writes into csv file
             f.write(str(i+1)+";")
             f.write(str(dstOG)+";")
             f.write(str(dstALT)+";")
@@ -141,23 +148,31 @@ if __name__ == "__main__":
                 f.write(iterations[j]+";")
                 f.write(scores[j]+";")
             f.write(str(isValid).lower())
-            
+
             decay_OG_lst.append(dstOG/sched_size * 100)
             decay_ALT_lst.append(dstALT/sched_size * 100)
-
+            iterations_lst.append(sum(iterations)/4)
+            #removes files used
             if autoremove:
                 execute_cmd("rm "+files)
             f.write("\n")
             f.close()
 
-        print(decay_OG_lst)
-        print(decay_ALT_lst)
+        print("Quick rundown")
         print(min(decay_ALT_lst),max(decay_ALT_lst))
         print(min(decay_OG_lst),max(decay_OG_lst))
-        plt.scatter(decay_OG_lst, decay_ALT_lst)
-        plt.title("Degradation des key schedules")
-        plt.xlabel("%% degradation originel")
-        plt.ylabel("%% degradation alternatif")
-        plt.show()
+    
+        if (graph):
+            plt.scatter(decay_OG_lst, decay_ALT_lst)
+            plt.title("Dégradation des key schedules")
+            plt.xlabel("%% dégradation originale")
+            plt.ylabel("%% dégradation du kschedule alternatif correspondant")
+            plt.show()
+
+            plt.scatter(decay_OG_lst, iterations_lst)
+            plt.title("Nombre d'itérations a partir du taux de dégradation")
+            plt.xlabel("%% dégradation originale")
+            plt.ylabel("# itérations")
+            plt.show()
 
         execute_cmd("rm misc/metadata.tmp")
