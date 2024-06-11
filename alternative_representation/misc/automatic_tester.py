@@ -29,6 +29,35 @@ def execute_cmd(cmd):
         print(cmd)
     os.system(cmd)
 
+# Extracts information relative to the heuristic correction
+# of a key schedule
+def extract_metadata():
+    keys = []
+    nb_iterations = []
+    scores = []
+
+    with open("misc/metadata.tmp", 'r') as content_file:
+        lines = content_file.readlines()
+        for line in lines:
+            keys.append(line.split()[0])
+            nb_iterations.append(line.split()[1])
+            scores.append(line.split()[2])
+
+    return keys, nb_iterations, scores
+
+# Compares if a corrected key corresponds to
+# the original key
+def check(key,sched):
+    execute_cmd("./bin/alt_to_classic "+("".join(key))+" -v=false > misc/metadata.tmp")
+    transKey = filter("misc/metadata.tmp")
+
+    with open(sched,"r") as f:
+        OGkey = f.readline()
+    
+    OGkey = "".join(OGkey.split())
+    return OGkey == transKey
+        
+
 if __name__ == "__main__":
         argc = len(sys.argv)
         nb_tests = 10
@@ -63,11 +92,14 @@ if __name__ == "__main__":
         
         f = open("misc/statistics.csv", "a+")
         if os.stat("misc/statistics.csv").st_size == 0:
-            f.write("test_number;hamming_dist_OG;hamming_dist_ALT;decay_OG;decay_ALT;growth;time\n")
+            f.write("test_number;hamming_dist_OG;hamming_dist_ALT;decay_OG;decay_ALT;growth;time;iter_block_1;score_1\
+                    ;iter_block_2;score_2;iter_block_3;score_3;iter_block_4;score_4;match\n")
+        f.close()
 
         decay_OG_lst = []
         decay_ALT_lst = []
         for i in range(nb_tests):
+            f = open("misc/statistics.csv", "a+")
             probability = fixed_probability #random.uniform(interval[0], interval[1])
 
             sched = "samples/sched"+str(i+offset)+".txt"
@@ -104,15 +136,19 @@ if __name__ == "__main__":
             f.write(str(dstOG/sched_size)+";")
             f.write(str(dstALT/sched_size)+";")
             f.write(str(dstALT/dstOG)+";")
-            f.write(str(exec_time))
-
+            f.write(str(exec_time)+";")
+            for j in range(4):
+                f.write(iterations[j]+";")
+                f.write(scores[j]+";")
+            f.write(str(isValid).lower())
+            
             decay_OG_lst.append(dstOG/sched_size * 100)
             decay_ALT_lst.append(dstALT/sched_size * 100)
 
             if autoremove:
                 execute_cmd("rm "+files)
             f.write("\n")
-        f.close()
+            f.close()
 
         print(decay_OG_lst)
         print(decay_ALT_lst)
