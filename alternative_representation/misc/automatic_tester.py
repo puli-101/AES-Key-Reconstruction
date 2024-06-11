@@ -91,12 +91,12 @@ if __name__ == "__main__":
             dstALT = calcHamming(trans, trans_modif)
             #calcs execution time
             exec_time = time.time()
-            execute_cmd("./bin/heuristic "+trans_modif+" "+str(dstALT/sched_size)+" -v=false >> misc/metadata.txt")
+            execute_cmd("./bin/heuristic "+trans_modif+" "+str(dstALT/sched_size)+" -v=false > misc/metadata.tmp")
             exec_time = time.time() - exec_time
             #extract metadata
-            # TODO (i.e. extract number of iterations per key)
+            keys, iterations, scores = extract_metadata() #read 4 lines of 3 words chacune and make it into a list
             #check if wrong reconstruction
-            # TODO (suffices to execute one of the translation binaries)
+            isValid = check(keys, sched) #execute ./bin/alt_to_classic [key] -v=false and compare with first line of file sched
 
             f.write(str(i+1)+";")
             f.write(str(dstOG)+";")
@@ -123,3 +123,5 @@ if __name__ == "__main__":
         plt.xlabel("%% degradation originel")
         plt.ylabel("%% degradation alternatif")
         plt.show()
+
+        execute_cmd("rm misc/metadata.tmp")

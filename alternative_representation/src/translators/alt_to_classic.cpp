@@ -59,8 +59,8 @@ void invert(uint8_t alt[NB_BYTES]) {
 
     if (VERBOSE)
         cout<<"Inverted key"<<endl;
-    for (int i = 0; VERBOSE && i < NB_BYTES; i++) {
-        if (i%4 == 0) cout<<" ";
+    for (int i = 0; i < NB_BYTES; i++) {
+        if (VERBOSE && i%4 == 0) cout<<" ";
         printf("%02x",key[i]);
     }
     printf("\n");
@@ -69,7 +69,9 @@ void invert(uint8_t alt[NB_BYTES]) {
 int main(int argc, char** argv) {
     if (argc < 2 || strlen(argv[1]) != 2 * NB_BYTES)
         usage(argv[0]);
-
+    if (argc == 3 && !strcmp(argv[2],"-v=false"))
+        VERBOSE = 0;
+    
     uint8_t key[NB_BYTES];
 
     parse_input_key(argv[1], key);
