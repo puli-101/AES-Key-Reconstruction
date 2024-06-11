@@ -1,8 +1,16 @@
 FLAGS = -Iinclude -O2
 
-all: bin/heuristic bin/bruteforce bin/keygen
+all: bin/heuristic bin/bruteforce bin/keygen bin/alt_to_classic bin/classic_to_alt
 
 bin/heuristic: src/correctors/heuristic_bsc.cpp obj/aes_cpp.o obj/util_cpp.o obj/resolution_handler_cpp.o
+	mkdir -p bin/
+	g++ -o $@ $^ $(FLAGS)
+
+bin/alt_to_classic: src/translators/alt_to_classic.cpp obj/aes_cpp.o obj/util_cpp.o 
+	mkdir -p bin/
+	g++ -o $@ $^ $(FLAGS)
+
+bin/classic_to_alt: src/translators/classic_to_alt.cpp obj/aes_cpp.o obj/util_cpp.o 
 	mkdir -p bin/
 	g++ -o $@ $^ $(FLAGS)
 
