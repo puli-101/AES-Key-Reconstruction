@@ -79,10 +79,12 @@ int main(int argc, char** argv) {
 
     //Parsing and parsing confirmation confirmation
     parse_input(raw, size, grid);
-    cout<<"Parsed input :\n";
-    print_new_schedule(grid);
-    cout<<"\n(Presque) Bruteforcing kschedule...\n";
-    
+    if (VERBOSE) {
+        cout<<"Parsed input :\n";
+        print_new_schedule(grid);
+        cout<<"\n(Presque) Bruteforcing kschedule...\n";
+    }
+
     correct();
 
     return EXIT_SUCCESS;
@@ -113,7 +115,7 @@ void correct() {
         u_int32_t count = 0;        //keeps track of number of tested candidates  
 
         while(!q.empty()) {
-            if ((count % threshold == 0)) {
+            if ((count % threshold == 0) && VERBOSE) {
                 print_progress(prcntg);
                 prcntg += 0.0125;
             }
@@ -124,11 +126,20 @@ void correct() {
             //then we print it on screen
             if (c.getScore() < (1.5 * SCALE)) {
                 found = true;
-                print_progress(1);
-                cout<<endl<<endl<<"Found after "<<count<<" iterations !\n->";
-                for (int i = 0 ; i < NB_BLOCKS; i++)
-                    printf("%02x ",get_byte_from_word(c.getSubKey(),i));
-                cout<<"\nWith a score of "<<c.getScore()<<endl<<endl;
+                if (VERBOSE) {
+                    //classic format printed on screen
+                    print_progress(1);
+                    cout<<endl<<endl<<"Found after "<<count<<" iterations !\n->";
+                    for (int i = 0 ; i < NB_BLOCKS; i++)
+                        printf("%02x",get_byte_from_word(c.getSubKey(),i));
+                    cout<<"\nWith a score of "<<c.getScore()<<endl<<endl;
+                } else {
+                    //compact format
+                    for (int i = 0 ; i < NB_BLOCKS; i++)
+                        printf("%02x",get_byte_from_word(c.getSubKey(),i));
+                    cout<<" "<<count<<" "<<c.getScore()<<endl;
+                }
+                
                 break;
             }
             if (c.finishedExploring())
@@ -146,8 +157,10 @@ void correct() {
             count++;
         }
 
-        if (!found)
+        if (!found && VERBOSE)
             cout<<endl<<"Key Not found after "<<count<<" iterations !\n";
+        else
+            cout<<"NOTFOUND "<<count<<" 100"<<endl;
     }
 }
 
