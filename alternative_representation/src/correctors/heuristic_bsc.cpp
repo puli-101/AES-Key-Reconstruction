@@ -119,6 +119,8 @@ void correct() {
             if ((count % threshold == 0) && VERBOSE) {
                 print_progress(prcntg);
                 prcntg += 0.0125;
+                if (prcntg >= 50)
+                    break;
             }
             Candidate c = q.top();
             q.pop();

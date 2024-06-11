@@ -1,4 +1,4 @@
-FLAGS = -Iinclude -O2
+FLAGS = -Iinclude -O3
 
 all: bin/heuristic bin/bruteforce bin/keygen bin/alt_to_classic bin/classic_to_alt
 
@@ -32,3 +32,6 @@ obj/%.o: src/util/%.c include/%.h
 
 clean:
 	rm -f obj/* bin/*
+
+clean_data:
+	rm misc/statistics.csv misc/metadata.tmp

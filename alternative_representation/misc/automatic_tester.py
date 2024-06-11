@@ -48,6 +48,9 @@ def extract_metadata():
 # Compares if a corrected key corresponds to
 # the original key
 def check(key,sched):
+    if ("NOTFOUND" in key):
+        return False
+    
     execute_cmd("./bin/alt_to_classic "+("".join(key))+" -v=false > misc/metadata.tmp")
     transKey = filter("misc/metadata.tmp")
 
@@ -96,8 +99,8 @@ if __name__ == "__main__":
         
         f = open("misc/statistics.csv", "a+")
         if os.stat("misc/statistics.csv").st_size == 0:
-            f.write("test_number;hamming_dist_OG;hamming_dist_ALT;decay_OG;decay_ALT;growth;time;iter_block_1;score_1\
-                    ;iter_block_2;score_2;iter_block_3;score_3;iter_block_4;score_4;match\n")
+            f.write("test_number;hamming_dist_OG;hamming_dist_ALT;decay_OG;decay_ALT;growth;time;iter_block_1;score_1"+
+                    ";iter_block_2;score_2;iter_block_3;score_3;iter_block_4;score_4;match\n")
         f.close()
 
         decay_OG_lst = []
@@ -129,12 +132,12 @@ if __name__ == "__main__":
             dstALT = calcHamming(trans, trans_modif)
             #calcs execution time
             exec_time = time.time()
-            execute_cmd("./bin/heuristic "+trans_modif+" "+str(dstALT/sched_size)+" -v=false > misc/metadata.tmp")
+            execute_cmd("nice -n -20 ./bin/heuristic "+trans_modif+" "+str(dstALT/sched_size)+" -v=false > misc/metadata.tmp")
             exec_time = time.time() - exec_time
             #extract metadata
             keys, iterations, scores = extract_metadata() #read 4 lines of 3 words chacune and make it into a list
             #check if wrong reconstruction
-            isValid = check(keys, sched) #execute ./bin/alt_to_classic [key] -v=false and compare with first line of file sched
+            isValid = check(keys, sched) 
 
             #writes into csv file
             f.write(str(i+1)+";")
@@ -151,7 +154,7 @@ if __name__ == "__main__":
 
             decay_OG_lst.append(dstOG/sched_size * 100)
             decay_ALT_lst.append(dstALT/sched_size * 100)
-            iterations_lst.append(sum(iterations)/4)
+            iterations_lst.append(sum([int(x) for x in iterations])/4)
             #removes files used
             if autoremove:
                 execute_cmd("rm "+files)
@@ -159,18 +162,20 @@ if __name__ == "__main__":
             f.close()
 
         print("Quick rundown")
-        print(min(decay_ALT_lst),max(decay_ALT_lst))
-        print(min(decay_OG_lst),max(decay_OG_lst))
-    
+        print("\tmin\tmax")
+        print("Original decay",min(decay_ALT_lst),max(decay_ALT_lst))
+        print("Alt decay",min(decay_OG_lst),max(decay_OG_lst))
+        print("Avg number of iterations",min(iterations_lst),max(iterations_lst))
+
         if (graph):
             plt.scatter(decay_OG_lst, decay_ALT_lst)
-            plt.title("Dégradation des key schedules")
+            plt.title("Propagation de la dégradation des key schedules")
             plt.xlabel("%% dégradation originale")
             plt.ylabel("%% dégradation du kschedule alternatif correspondant")
             plt.show()
 
             plt.scatter(decay_OG_lst, iterations_lst)
-            plt.title("Nombre d'itérations a partir du taux de dégradation")
+            plt.title("Nombre d'itérations à partir du taux de dégradation")
             plt.xlabel("%% dégradation originale")
             plt.ylabel("# itérations")
             plt.show()
