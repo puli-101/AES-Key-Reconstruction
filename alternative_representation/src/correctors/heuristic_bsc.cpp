@@ -93,7 +93,8 @@ int main(int argc, char** argv) {
 void correct() {
     //We correct each of the 4 32-bit blocks making up the key
     for (int i = 0; i < 4; i++) {
-        cout<<"Solving block "<<i<<endl;
+        if (VERBOSE)
+            cout<<"Solving block "<<i<<endl;
         CURRENT_BLOCK = i;
         priority_queue<Candidate, vector<Candidate>, CompareCandidates> q;  //keps track of the closest candidate to an actual solution
         Candidate first;            //first tested candidate
@@ -159,7 +160,7 @@ void correct() {
 
         if (!found && VERBOSE)
             cout<<endl<<"Key Not found after "<<count<<" iterations !\n";
-        else
+        else if (!found)
             cout<<"NOTFOUND "<<count<<" 100"<<endl;
     }
 }
