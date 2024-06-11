@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     }
 
     //Option handling
-    for (int i = 3; i < argc; i++) {
+    for (int i = 2; i < argc; i++) {
         if (!strcmp(argv[i],"-v=false"))
             VERBOSE = 0;
     }

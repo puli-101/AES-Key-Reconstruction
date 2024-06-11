@@ -7,8 +7,8 @@ using std::endl;
 using std::string;
 
 void usage(char* name) {
-    cout<<"Usage "<<name<<" <filename> [-v=false]"<<endl;
-    cout<<"- Where filename contains an AES-128 key schedule"<<endl;
+    cout<<"Usage "<<name<<" <alternative_round_key> [-v=false]"<<endl;
+    cout<<"- Where alternative_round_key is a 32-bit-long hex-coded alternative AES-128 round-key"<<endl;
     exit(EXIT_FAILURE);
 }
 
