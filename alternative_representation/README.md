@@ -14,15 +14,20 @@ keygen.c generates a key schedule as specified in pages 7 and 8 of bibliography.
 
 $k_i$ corresponds to the $i$-th byte of the orignial key. On the other hand, $k'_i$ corresponds to the $i$-th byte after the transformations shown in page 7 of the bibliography.
 
-### 2. Error correcting algorithms
+### 2. Translators
 
-#### 2.1 bruteforce_bsc.c
+- alt_to_classic.cpp transforms a single 128-bit alternative round key given as an argument into a its equivalent standard AES round key
+- classic_to_alt.cpp transforms a full classic key schedule into its alternative representation
+
+### 3. Error correcting algorithms
+
+#### 3.1 bruteforce_bsc.c
 
 Bruteforces all possible values of the initial row of an alternative key schedule.
 
 In particular all possible values of [ $s_i$ , $s_{i+1}$ , $s_{i+2}$ , $s_{i+3}$ ] for { $ i \in {0,1,2,3} $} are enumerated and each candidate is ranked according to its Z-score
 
-#### 2.2 heuristic_bsc.c 
+#### 3.2 heuristic_bsc.c 
 
 Ennumerates key schedules by least divergence to extracted key schedule relative to the decay probability using the Z-score. Outputs key schedule that has Z-score of less than 3/2 standard deviations
 
@@ -41,17 +46,22 @@ Where KEY represents an AES-128 key in hexadecimal and OPTIONS include (for now)
 
 If no input is given, then a random AES-128 key schedule is generated.
 
-### 2. Noisy Channels
-To modify a schedule, execute
+### 2. Translators
+To translate a classic schedule into an alternative one, execute 
 
-    ./bin/noise <file> <probability> <channel_t> [options]
+    ./bin/classic_to_alt <file> [options]
 
 Where 
 
 - 'file' contains an AES key schedule as formatted as ./bin/keygen 's output (see './samples/aes-128-schedule.txt' for an example)
-- 'probability' indicates how likely each bit is to flip/be erased
-- 'channel_t' indicates the type of noisy channel the key schedule goes through. Accepted types include 'bin-sym' for binary symmetric, 'bin-erasure' for binary erasure, and 'z-channel'
-- options include -v=false to disable verbose
+
+To translate an alternative schedule into a classic one, execute 
+
+    ./bin/classic_to_alt <key> [options]
+
+Where
+
+- 'key' is a 64 character long string representing an alternative round key encoded in hexadecimal
 
 ### 3. Error Correction
 
@@ -69,7 +79,7 @@ To correct heuristically a key schedule that lost bits through the binary symmet
 
     ./bin/heuristic <file> <probability> [options]
 
-You can expect execution times of up to 30 minutes.
+You can expect execution times of up to 30 minutes depending on the given probability (usually it is less than a minute for small enough probabilities).
 
 ## Bibliography
 
