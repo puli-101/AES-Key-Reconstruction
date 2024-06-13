@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
         for i in range(nb_tests):
             f = open("misc/statistics.csv", "a+")
-            probability = fixed_probability #random.uniform(interval[0], interval[1])
+            probability = random.uniform(interval[0], interval[1]) # fixedprobability
 
             sched = "samples/sched"+str(i+offset)+".txt"
             modif = "samples/sched"+str(i+offset)+"_"+(str(probability)[2:6])+".txt"
@@ -162,22 +162,12 @@ if __name__ == "__main__":
             f.close()
 
         print("Quick rundown")
-        print("\tmin\tmax")
-        print("Original decay",min(decay_ALT_lst),max(decay_ALT_lst))
-        print("Alt decay",min(decay_OG_lst),max(decay_OG_lst))
-        print("Avg number of iterations",min(iterations_lst),max(iterations_lst))
+        print("\t\t\t\tmin\t\tmax")
+        print("Original decay\t\t",min(decay_OG_lst),max(decay_OG_lst))
+        print("Alt decay\t\t",min(decay_ALT_lst),max(decay_OG_lst))
+        print("Avg number of iterations\t",min(iterations_lst),max(iterations_lst))
 
         if (graph):
-            plt.scatter(decay_OG_lst, decay_ALT_lst)
-            plt.title("Propagation de la dégradation des key schedules")
-            plt.xlabel("%% dégradation originale")
-            plt.ylabel("%% dégradation du kschedule alternatif correspondant")
-            plt.show()
-
-            plt.scatter(decay_OG_lst, iterations_lst)
-            plt.title("Nombre d'itérations à partir du taux de dégradation")
-            plt.xlabel("%% dégradation originale")
-            plt.ylabel("# itérations")
-            plt.show()
+            print("No...")
 
         execute_cmd("rm misc/metadata.tmp")
