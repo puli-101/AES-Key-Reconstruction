@@ -34,4 +34,4 @@ clean:
 	rm -f obj/* bin/*
 
 clean_data:
-	rm misc/statistics.csv misc/metadata.tmp
+	rm -f misc/statistics.csv misc/metadata.tmp

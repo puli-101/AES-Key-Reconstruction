@@ -115,7 +115,7 @@ void correct() {
         double prcntg = 0.0;        //keeps track of percentage of tested candidates
         u_int32_t count = 0;        //keeps track of number of tested candidates  
 
-        while(!q.empty()) {
+        while(count < 1431655765) {
             if ((count % threshold == 0) && VERBOSE) {
                 print_progress(prcntg);
                 prcntg += 0.0125;

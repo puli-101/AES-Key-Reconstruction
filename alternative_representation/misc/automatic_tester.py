@@ -6,7 +6,7 @@ import time
 
 verbose = True
 
-## see TODO
+## Execute as sudo python3 misc/automatic_tester.py -n=100
 
 def filter(filename):
     with open(filename, 'r') as content_file:
@@ -69,19 +69,17 @@ if __name__ == "__main__":
         autoremove = True
         sched_size = 128 * 11
         fixed_probability = 0.0625
-        graph = False
 
         if argc > 1:
             for i in range(1, argc):
                 option = sys.argv[i]
                 if (option == "-h" or option == "-help" or option == "--help"):
-                    print("Usage : "+sys.argv[0]+" [-n=<integer> | -o=<integer> | -p=<float> | -v=<bool> | -r=<bool> | -g=true]")
+                    print("Usage : "+sys.argv[0]+" [-n=<integer> | -o=<integer> | -p=<float> | -v=<bool> | -r=<bool>")
                     print("Where\t-n indicates the maximum number of tests ("+str(nb_tests)+" by default)")
                     print("\t-o indicates the offset of the tests (e.g. if -o=3 then we start counting from 3 which is the default value)")
                     print("\t-p indicates the maximum error probability considered while generating the tests (default 0.125)")
                     print("\t-v indicates if the partial results/statistics are to be shown (default is "+str(verbose)+")")
-                    print("\t-r indicates if test files are to be autoremoved (default is true)")
-                    print("\t-g indicates whether a graph will be shown at the end (default : "+str(graph).lower()+")")
+                    print("\t-r indicates if test files are to be autoremoved (default is true)\n")
                     print("Warning : this code has to be run from the folder alternative_representation")
                     sys.exit()
                 elif option.startswith("-n"):
@@ -108,7 +106,6 @@ if __name__ == "__main__":
         iterations_lst = []
 
         for i in range(nb_tests):
-            f = open("misc/statistics.csv", "a+")
             probability = random.uniform(interval[0], interval[1]) # fixedprobability
 
             sched = "samples/sched"+str(i+offset)+".txt"
@@ -140,6 +137,7 @@ if __name__ == "__main__":
             isValid = check(keys, sched) 
 
             #writes into csv file
+            f = open("misc/statistics.csv", "a+")
             f.write(str(i+1)+";")
             f.write(str(dstOG)+";")
             f.write(str(dstALT)+";")
@@ -151,6 +149,8 @@ if __name__ == "__main__":
                 f.write(iterations[j]+";")
                 f.write(scores[j]+";")
             f.write(str(isValid).lower())
+            f.write("\n")
+            f.close()
 
             decay_OG_lst.append(dstOG/sched_size * 100)
             decay_ALT_lst.append(dstALT/sched_size * 100)
@@ -158,16 +158,11 @@ if __name__ == "__main__":
             #removes files used
             if autoremove:
                 execute_cmd("rm "+files)
-            f.write("\n")
-            f.close()
 
         print("Quick rundown")
         print("\t\t\t\tmin\t\tmax")
         print("Original decay\t\t",min(decay_OG_lst),max(decay_OG_lst))
         print("Alt decay\t\t",min(decay_ALT_lst),max(decay_OG_lst))
         print("Avg number of iterations\t",min(iterations_lst),max(iterations_lst))
-
-        if (graph):
-            print("No...")
 
         execute_cmd("rm misc/metadata.tmp")

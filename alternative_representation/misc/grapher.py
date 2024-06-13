@@ -11,8 +11,11 @@ def graph(path, options):
     df = pd.read_csv(path, header=0, sep=";", engine="pyarrow")
 
     if options["decay"]:
+        min_ = df['decay_OG'].min
+        max_ = df['decay_OG'].max
+        t = [(min_ + (max_ - min_)/100 * t) for t in range(101)]
+
         df.plot(kind="scatter", x="decay_OG", y="decay_ALT")
-        t = [(0.05 + 0.001 * h) for h in range(100)]
         plt.plot(t, [2 * y for y in t], color="red")
         plt.suptitle("Decay rate of key schedule after translation")
         plt.xlabel("Decay rate of key in RAM (errors/key size)")
@@ -29,8 +32,12 @@ def graph(path, options):
             plt.xlabel("Decay rate (errors/key size)")
             plt.ylabel("Iterations of first block (#)")
     if options["failures"]:
-        rslt_df = df[df['match'] == "false"]
-        
+        rslt_df = df[df['match'] == False]
+        rslt_df['decay_OG'].hist()
+        plt.title('Number of failures as a function of decay rate') 
+        plt.xlabel('Decay rate (errors/key size)') 
+        plt.ylabel('Number of failures (#)') 
+        plt.show() 
 
     plt.show()
 
@@ -47,14 +54,12 @@ if __name__ == "__main__":
             if option == "control":
                 path = paths[1]
             elif option == "help":
-                print(sys.argv[0]+" [control | help]")
+                print(sys.argv[0]+" [decay | time | iterations | failures | control | path=PATH | help]")
                 sys.exit()
             elif option.startswith("path="): #custom path
                 path = option[5:]
             elif option == "decay" or option == "time" or option == "iterations" or option == "failures":
                 options[option] = True
-            #elif options.startswith("divisions="):
-            #    options["divisions"] = int(option[10:])
             else:
                 print("Unknown option: "+option)
                 sys.exit()
